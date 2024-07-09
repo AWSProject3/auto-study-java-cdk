@@ -1,7 +1,6 @@
 package aws.vpc.subnet.route;
 
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.util.ScopeValidator;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnRoute;
 import software.amazon.awscdk.services.ec2.CfnRouteTable;
@@ -26,9 +25,9 @@ public class PublicRouteTable implements RouteTable {
 
     @Override
     public void configure(SubnetDto subnetDto) {
-        CfnRouteTable routeTable = createRouteTable();
-        assignRoute(routeTable);
-        associateWithSubnet(subnetDto, routeTable);
+        createRouteTable();
+        assignRoute();
+        associateWithSubnet(subnetDto);
     }
 
     private CfnRouteTable createRouteTable() {
@@ -37,26 +36,25 @@ public class PublicRouteTable implements RouteTable {
                 .build();
     }
 
-    private void assignRoute(CfnRouteTable routeTable) {
+    private void assignRoute() {
         CfnRoute.Builder.create(scope, routeId)
-                .routeTableId(routeTable.getAttrRouteTableId())
+                .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
                 .gatewayId(vpc.getInternetGatewayId())
                 .build();
     }
 
-    private CfnSubnetRouteTableAssociation associateWithSubnet(SubnetDto subnetDto, CfnRouteTable routeTable) {
-        if (subnetDto.getAz().existsFirstAZ()) {
-            return createAssociation(subnetDto.getId(), routeTable, "PublicSubnet1RouteTableAssociation");
+    private CfnSubnetRouteTableAssociation associateWithSubnet(SubnetDto subnetDto) {
+        if (subnetDto.az().existsFirstAZ()) {
+            return createAssociation(subnetDto.id(), "PublicSubnet1RouteTableAssociation");
         }
-        return createAssociation(subnetDto.getId(), routeTable, "PublicSubnet2RouteTableAssociation");
+        return createAssociation(subnetDto.id(), "PublicSubnet2RouteTableAssociation");
     }
 
-    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, CfnRouteTable routeTable,
-                                                             String associationId) {
+    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String associationId) {
         return Builder.create(scope, associationId)
                 .subnetId(subnetId)
-                .routeTableId(routeTable.getAttrRouteTableId())
+                .routeTableId(routeTableId)
                 .build();
     }
 }

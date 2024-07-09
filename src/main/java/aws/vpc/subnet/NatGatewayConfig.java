@@ -37,17 +37,17 @@ public class NatGatewayConfig {
     }
 
     private boolean isPublicType(SubnetDto subnetDto) {
-        return PUBLIC_TYPE.equals(subnetDto.getType());
+        return PUBLIC_TYPE.equals(subnetDto.type());
     }
 
     private NatGatewayDto createNatGatewayDto(SubnetDto subnetDto) {
         int suffix = createSuffix(subnetDto);
-        CfnNatGateway natGateway = createNatGateway(subnetDto.getId(), createEIP(EIP + suffix), ID_PREFIX + suffix);
+        CfnNatGateway natGateway = createNatGateway(subnetDto.id(), createEIP(EIP + suffix), ID_PREFIX + suffix);
         return new NatGatewayDto(natGateway.getAttrNatGatewayId());
     }
 
     private int createSuffix(SubnetDto subnetDto) {
-        if (subnetDto.getAz().existsFirstAZ()) {
+        if (subnetDto.az().existsFirstAZ()) {
             return 1;
         }
         return 2;
