@@ -33,7 +33,6 @@ dependencies {
     implementation 'software.amazon.awscdk:core:1.204.0'
     implementation 'software.amazon.awssdk:rds:2.26.16'
     implementation 'software.amazon.awssdk:regions:2.26.16'
-
     implementation 'software.amazon.awscdk:eks:1.204.0'
 }
 
@@ -45,8 +44,10 @@ test {
     useJUnitPlatform()
 }
 
-tasks.named('shadowJar') {
+shadowJar {
+    archiveBaseName.set('app')
     archiveClassifier.set('')
+    archiveVersion.set('1.0-SNAPSHOT')
     manifest {
         attributes 'Main-Class': 'AutoCodeApplication'
     }

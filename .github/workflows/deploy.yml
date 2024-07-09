@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'  # Java distribution 추가
+          distribution: 'temurin'
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -37,11 +37,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Install dependencies
-        run: ./gradlew build
+        run: ./gradlew clean build
 
       - name: Deploy CDK Stack
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT-all.jar" --require-approval never
+        run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never
