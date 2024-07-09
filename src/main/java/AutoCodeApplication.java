@@ -8,6 +8,10 @@ public class AutoCodeApplication {
 
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         infraAdminister.createInfra(app, "730335599027", "us-east-1");
+
+        // rds
+        // eks
+
         app.synth();
     }
 }
