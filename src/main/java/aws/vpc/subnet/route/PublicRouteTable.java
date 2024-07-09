@@ -26,8 +26,8 @@ public class PublicRouteTable implements RouteTable {
     @Override
     public void configure(SubnetDto subnetDto) {
         createRouteTable();
+        associateRouteTableWithSubnet(subnetDto);
         assignRoute();
-        associateWithSubnet(subnetDto);
     }
 
     private CfnRouteTable createRouteTable() {
@@ -44,7 +44,7 @@ public class PublicRouteTable implements RouteTable {
                 .build();
     }
 
-    private CfnSubnetRouteTableAssociation associateWithSubnet(SubnetDto subnetDto) {
+    private CfnSubnetRouteTableAssociation associateRouteTableWithSubnet(SubnetDto subnetDto) {
         if (subnetDto.az().existsFirstAZ()) {
             return createAssociation(subnetDto.id(), "PublicSubnet1RouteTableAssociation");
         }
@@ -52,7 +52,7 @@ public class PublicRouteTable implements RouteTable {
     }
 
     private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String associationId) {
-        return Builder.create(scope, associationId)
+        return CfnSubnetRouteTableAssociation.Builder.create(scope, associationId)
                 .subnetId(subnetId)
                 .routeTableId(routeTableId)
                 .build();

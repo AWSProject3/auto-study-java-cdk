@@ -30,8 +30,8 @@ public class PrivateRouteTable implements RouteTable {
     @Override
     public void configure(SubnetDto subnetDto) {
         createRouteTable();
+        associateRouteTableWithSubnet(subnetDto);
         routePrivateSubnetToNatGateway();
-        associateWithSubnet(subnetDto);
     }
 
     private CfnRouteTable createRouteTable() {
@@ -62,15 +62,15 @@ public class PrivateRouteTable implements RouteTable {
                 .build();
     }
 
-    private CfnSubnetRouteTableAssociation associateWithSubnet(SubnetDto subnetDto) {
+    private CfnSubnetRouteTableAssociation associateRouteTableWithSubnet(SubnetDto subnetDto) {
         if (subnetDto.az().existsFirstAZ()) {
             return createAssociation(subnetDto.id(), "PrivateSubnet1RouteTableAssociation");
         }
         return createAssociation(subnetDto.id(), "PrivateSubnet2RouteTableAssociation");
     }
 
-    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String id) {
-        return CfnSubnetRouteTableAssociation.Builder.create(scope, id)
+    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String associationId) {
+        return CfnSubnetRouteTableAssociation.Builder.create(scope, associationId)
                 .subnetId(subnetId)
                 .routeTableId(routeTableId)
                 .build();
