@@ -1,0 +1,17 @@
+# intellj
+.idea
+out
+
+# gradle
+.gradle
+build
+!gradle/wrapper/gradle-wrapper.jar
+
+# windows
+Thumbs.db
+Desktop.ini
+
+# etc..
+*.log
+*.jar
+*.war
