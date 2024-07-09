@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group 'app'
+version '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    junitVersion = '5.10.0'
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+
+    implementation 'software.amazon.awscdk:ec2:1.204.0'
+    implementation 'software.amazon.awscdk:core:1.204.0'
+    implementation 'com.amazonaws:aws-java-sdk-eks:1.12.757'
+
+    // https://mvnrepository.com/artifact/software.amazon.awscdk/aws-cdk-lib
+    implementation 'software.amazon.awscdk:aws-cdk-lib:2.148.0'
+
+    implementation 'software.amazon.awssdk:rds:2.26.16'
+    implementation 'software.amazon.awssdk:regions:2.26.16'
+}
+
+test {
+    useJUnitPlatform()
+}
