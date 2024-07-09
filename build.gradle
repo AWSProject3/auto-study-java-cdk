@@ -28,12 +28,12 @@ dependencies {
     implementation 'software.amazon.awscdk:core:1.204.0'
     implementation 'software.amazon.awssdk:rds:2.26.16'
     implementation 'software.amazon.awssdk:regions:2.26.16'
+
+    implementation 'software.amazon.awscdk:eks:1.204.0'
 }
 
-node {
-    version = '22.4.1'
-    npmVersion = '10.8.1'
-    download = true
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 test {

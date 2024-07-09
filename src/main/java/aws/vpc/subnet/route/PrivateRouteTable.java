@@ -18,7 +18,8 @@ public class PrivateRouteTable implements RouteTable {
     private final String privateRouteId;
     private final Optional<NatGatewayDto> natGateway;
 
-    public PrivateRouteTable(Construct scope, Vpc vpc, String routeTableId, String privateRouteId, Optional<NatGatewayDto> natGateway) {
+    public PrivateRouteTable(Construct scope, Vpc vpc, String routeTableId, String privateRouteId,
+                             Optional<NatGatewayDto> natGateway) {
         this.scope = scope;
         this.vpc = vpc;
         this.routeTableId = routeTableId;
@@ -50,7 +51,7 @@ public class PrivateRouteTable implements RouteTable {
         CfnRoute.Builder.create(scope, routeId)
                 .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
-                .natGatewayId(natGateway.getId())
+                .natGatewayId(natGateway.id())
                 .build();
     }
 

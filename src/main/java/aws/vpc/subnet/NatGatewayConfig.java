@@ -21,14 +21,6 @@ public class NatGatewayConfig {
         this.scope = scope;
     }
 
-//    public List<NatGatewayDto> configure(List<SubnetDto> subnetDtos) {
-//        return subnetDtos.stream()
-//                .filter(this::isPublicType)
-//                .map(this::createNatGateway)
-//                .map(natGateway -> new NatGatewayDto(natGateway.getAttrNatGatewayId()))
-//                .toList();
-//    }
-
     public NatGatewayDto configure(SubnetDto subnetDto) {
         if (isPublicType(subnetDto)) {
             return createNatGatewayDto(subnetDto);

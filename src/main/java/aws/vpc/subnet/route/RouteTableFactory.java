@@ -16,6 +16,9 @@ public class RouteTableFactory {
     private static final String PRIVATE_ROUTE_TABLE_PREFIX = "PrivateRouteTable";
     private static final String PRIVATE_ROUTE_PREFIX = "PrivateRoute";
 
+    private static final String TARGET = "PrivateSubnet";
+    private static final String REPLACEMENT = "PublicSubnet";
+
     private final Construct scope;
     private final Vpc vpc;
 
@@ -61,7 +64,7 @@ public class RouteTableFactory {
 
     private boolean hasRelatedPublicSubnet(SubnetDto subnetDto) {
         String privateSubnetId = subnetDto.id();
-        String relatedPublicSubnetId = privateSubnetId.replace("PrivateSubnet", "PublicSubnet");
+        String relatedPublicSubnetId = privateSubnetId.replace(TARGET, REPLACEMENT);
 
         return vpc.getPublicSubnets().stream()
                 .anyMatch(subnet -> subnet.getSubnetId().equals(relatedPublicSubnetId));

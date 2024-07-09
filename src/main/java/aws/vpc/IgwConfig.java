@@ -1,6 +1,5 @@
 package aws.vpc;
 
-import aws.vpc.util.ScopeValidator;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnInternetGateway;
 import software.amazon.awscdk.services.ec2.CfnVPCGatewayAttachment;
