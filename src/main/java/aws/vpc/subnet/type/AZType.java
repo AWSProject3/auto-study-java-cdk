@@ -3,8 +3,8 @@ package aws.vpc.subnet.type;
 
 public enum AZType {
 
-    AZ_1A("us-east-1a"),
-    AZ_1B("us-east-1b");
+    AZ_1A("us-east-2a"),
+    AZ_1B("us-east-2b");
 
     private final String value;
 
