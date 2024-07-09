@@ -6,8 +6,8 @@ import aws.vpc.subnet.NatGatewayConfig;
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
 import java.util.Optional;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class RouteTableFactory {
 

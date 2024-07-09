@@ -6,8 +6,8 @@ import static aws.vpc.subnet.type.AZType.AZ_1B;
 import aws.vpc.subnet.dto.SubnetDto;
 import java.util.ArrayList;
 import java.util.List;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class SubnetConfig {
     private final Construct scope;

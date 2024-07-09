@@ -1,5 +1,5 @@
 import aws.vpc.BasicInfraAdminister;
-import software.amazon.awscdk.core.App;
+import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
 

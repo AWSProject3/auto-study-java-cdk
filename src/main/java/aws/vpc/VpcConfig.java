@@ -1,7 +1,7 @@
 package aws.vpc;
 
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class VpcConfig {
     private final Construct scope;

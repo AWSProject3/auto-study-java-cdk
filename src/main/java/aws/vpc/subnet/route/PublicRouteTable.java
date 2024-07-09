@@ -1,12 +1,12 @@
 package aws.vpc.subnet.route;
 
 import aws.vpc.subnet.dto.SubnetDto;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnRoute;
 import software.amazon.awscdk.services.ec2.CfnRouteTable;
 import software.amazon.awscdk.services.ec2.CfnSubnetRouteTableAssociation;
 import software.amazon.awscdk.services.ec2.CfnSubnetRouteTableAssociation.Builder;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class PublicRouteTable implements RouteTable {
     private static final String CIDR = "0.0.0.0/0";

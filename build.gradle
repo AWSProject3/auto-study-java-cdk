@@ -29,11 +29,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 
-    implementation 'software.amazon.awscdk:ec2:1.204.0'
-    implementation 'software.amazon.awscdk:core:1.204.0'
-    implementation 'software.amazon.awssdk:rds:2.26.16'
-    implementation 'software.amazon.awssdk:regions:2.26.16'
-    implementation 'software.amazon.awscdk:eks:1.204.0'
+    implementation 'software.amazon.awscdk:aws-cdk-lib:2.93.0'
+    implementation 'software.constructs:constructs:10.3.0'
+    implementation 'software.amazon.awssdk:rds:2.21.20'
+    implementation 'software.amazon.awssdk:regions:2.21.20'
 }
 
 tasks.withType(JavaCompile) {

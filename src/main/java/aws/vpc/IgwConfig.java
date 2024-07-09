@@ -1,9 +1,9 @@
 package aws.vpc;
 
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnInternetGateway;
 import software.amazon.awscdk.services.ec2.CfnVPCGatewayAttachment;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class IgwConfig {
     private final String SUFFIX = "attachment";

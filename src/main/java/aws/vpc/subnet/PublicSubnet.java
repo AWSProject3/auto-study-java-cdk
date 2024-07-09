@@ -3,9 +3,9 @@ package aws.vpc.subnet;
 import aws.vpc.subnet.dto.SubnetDto;
 import aws.vpc.subnet.type.AZType;
 import aws.vpc.subnet.type.SubnetType;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnSubnet;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.constructs.Construct;
 
 public class PublicSubnet {
 

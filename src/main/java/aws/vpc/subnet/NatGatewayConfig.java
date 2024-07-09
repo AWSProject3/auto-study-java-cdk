@@ -5,10 +5,10 @@ import static aws.vpc.subnet.type.SubnetType.PUBLIC_TYPE;
 
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnEIP;
 import software.amazon.awscdk.services.ec2.CfnEIP.Builder;
 import software.amazon.awscdk.services.ec2.CfnNatGateway;
+import software.constructs.Construct;
 
 public class NatGatewayConfig {
 
