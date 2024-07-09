@@ -29,9 +29,9 @@ public class PrivateRouteTable implements RouteTable {
 
     @Override
     public void configure(SubnetDto subnetDto) {
-        createRouteTable();
-        associateRouteTableWithSubnet(subnetDto);
-        routePrivateSubnetToNatGateway();
+        String createdRouteTableId = createRouteTable().getAttrRouteTableId();
+        associateRouteTableWithSubnet(subnetDto, createdRouteTableId);
+        routePrivateSubnetToNatGateway(createdRouteTableId);
     }
 
     private CfnRouteTable createRouteTable() {
@@ -40,14 +40,29 @@ public class PrivateRouteTable implements RouteTable {
                 .build();
     }
 
-    private void routePrivateSubnetToNatGateway() {
+    private CfnSubnetRouteTableAssociation associateRouteTableWithSubnet(SubnetDto subnetDto, String routeTableId) {
+        if (subnetDto.az().existsFirstAZ()) {
+            return createAssociation(subnetDto.id(), routeTableId, "PrivateSubnet1RouteTableAssociation");
+        }
+        return createAssociation(subnetDto.id(), routeTableId, "PrivateSubnet2RouteTableAssociation");
+    }
+
+    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String routeTableId,
+                                                             String associationId) {
+        return CfnSubnetRouteTableAssociation.Builder.create(scope, associationId)
+                .subnetId(subnetId)
+                .routeTableId(routeTableId)
+                .build();
+    }
+
+    private void routePrivateSubnetToNatGateway(String routeTableId) {
         natGateway.ifPresentOrElse(
-                ngw -> assignRoute(privateRouteId, ngw),
-                () -> assignRoute(privateRouteId)
+                ngw -> assignRoute(privateRouteId, routeTableId, ngw),
+                () -> assignRoute(privateRouteId, routeTableId)
         );
     }
 
-    private void assignRoute(String routeId, NatGatewayDto natGateway) {
+    private void assignRoute(String routeId, String routeTableId, NatGatewayDto natGateway) {
         CfnRoute.Builder.create(scope, routeId)
                 .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
@@ -55,24 +70,10 @@ public class PrivateRouteTable implements RouteTable {
                 .build();
     }
 
-    private void assignRoute(String routeId) {
+    private void assignRoute(String routeId, String routeTableId) {
         CfnRoute.Builder.create(scope, routeId)
                 .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
-                .build();
-    }
-
-    private CfnSubnetRouteTableAssociation associateRouteTableWithSubnet(SubnetDto subnetDto) {
-        if (subnetDto.az().existsFirstAZ()) {
-            return createAssociation(subnetDto.id(), "PrivateSubnet1RouteTableAssociation");
-        }
-        return createAssociation(subnetDto.id(), "PrivateSubnet2RouteTableAssociation");
-    }
-
-    private CfnSubnetRouteTableAssociation createAssociation(String subnetId, String associationId) {
-        return CfnSubnetRouteTableAssociation.Builder.create(scope, associationId)
-                .subnetId(subnetId)
-                .routeTableId(routeTableId)
                 .build();
     }
 }
