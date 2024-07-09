@@ -1,9 +1,8 @@
 package aws.vpc.subnet.route;
 
-import aws.vpc.subnet.NatGatewayConfig;
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.util.ScopeValidator;
+import java.util.Optional;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.CfnRoute;
 import software.amazon.awscdk.services.ec2.CfnRouteTable;
@@ -16,17 +15,19 @@ public class PrivateRouteTable implements RouteTable {
     private final Construct scope;
     private final Vpc vpc;
     private final String routeTableId;
+    private final Optional<NatGatewayDto> natGateway;
 
-    public PrivateRouteTable(Construct scope, String routeTableId) {
+    public PrivateRouteTable(Construct scope, Vpc vpc, String routeTableId, Optional<NatGatewayDto> natGateway) {
         this.scope = scope;
-        this.vpc = ScopeValidator.extractVpcBy(scope);
+        this.vpc = vpc;
         this.routeTableId = routeTableId;
+        this.natGateway = natGateway;
     }
 
     @Override
     public void configure(SubnetDto subnetDto) {
         CfnRouteTable routeTable = createRouteTable();
-        allocateNatGatewayToPrivateSubnet(subnetDto, routeTable);
+        routePrivateSubnetToNatGateway(routeTable);
         associateWithSubnet(subnetDto, routeTable);
     }
 
@@ -36,14 +37,12 @@ public class PrivateRouteTable implements RouteTable {
                 .build();
     }
 
-    private void allocateNatGatewayToPrivateSubnet(SubnetDto subnetDto, CfnRouteTable routeTable) {
-        NatGatewayDto natGateway = createNatGateway(subnetDto);
-        assignRoute(routeTable, natGateway.getId(), "PrivateRoute" + findRouteTableOrder(routeTable));
-    }
-
-    private NatGatewayDto createNatGateway(SubnetDto subnetDto) {
-        NatGatewayConfig natGatewayConfig = new NatGatewayConfig(scope);
-        return natGatewayConfig.configure(subnetDto);
+    private void routePrivateSubnetToNatGateway(CfnRouteTable routeTable) {
+        String routeId = "PrivateRoute" + findRouteTableOrder(routeTable);
+        natGateway.ifPresentOrElse(
+                ngw -> assignRoute(routeTable, routeId, ngw),
+                () -> assignRoute(routeTable, routeId)
+        );
     }
 
     private String findRouteTableOrder(CfnRouteTable routeTable) {
@@ -53,11 +52,18 @@ public class PrivateRouteTable implements RouteTable {
         return "2";
     }
 
-    private void assignRoute(CfnRouteTable routeTable, String natGatewayId, String routeId) {
+    private void assignRoute(CfnRouteTable routeTable, String routeId, NatGatewayDto natGateway) {
         CfnRoute.Builder.create(scope, routeId)
                 .routeTableId(routeTable.getAttrRouteTableId())
                 .destinationCidrBlock(CIDR)
-                .natGatewayId(natGatewayId)
+                .natGatewayId(natGateway.getId())
+                .build();
+    }
+
+    private void assignRoute(CfnRouteTable routeTable, String routeId) {
+        CfnRoute.Builder.create(scope, routeId)
+                .routeTableId(routeTable.getAttrRouteTableId())
+                .destinationCidrBlock(CIDR)
                 .build();
     }
 

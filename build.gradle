@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.node-gradle.node' version '3.0.1'
 }
 
 group 'app'
@@ -25,13 +26,14 @@ dependencies {
 
     implementation 'software.amazon.awscdk:ec2:1.204.0'
     implementation 'software.amazon.awscdk:core:1.204.0'
-    implementation 'com.amazonaws:aws-java-sdk-eks:1.12.757'
-
-    // https://mvnrepository.com/artifact/software.amazon.awscdk/aws-cdk-lib
-    implementation 'software.amazon.awscdk:aws-cdk-lib:2.148.0'
-
     implementation 'software.amazon.awssdk:rds:2.26.16'
     implementation 'software.amazon.awssdk:regions:2.26.16'
+}
+
+node {
+    version = '22.4.1'
+    npmVersion = '10.8.1'
+    download = true
 }
 
 test {

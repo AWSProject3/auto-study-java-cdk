@@ -11,6 +11,7 @@ public class AutoCodeApplication {
 
         // rds
         // eks
+        System.out.println("complete");
 
         app.synth();
     }

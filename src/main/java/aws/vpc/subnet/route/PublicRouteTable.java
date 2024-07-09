@@ -17,9 +17,9 @@ public class PublicRouteTable implements RouteTable {
     private final String routeTableId;
     private final String routeId;
 
-    public PublicRouteTable(Construct scope, String routeTableId, String routeId) {
+    public PublicRouteTable(Construct scope, Vpc vpc, String routeTableId, String routeId) {
         this.scope = scope;
-        this.vpc = ScopeValidator.extractVpcBy(scope);
+        this.vpc = vpc;
         this.routeTableId = routeTableId;
         this.routeId = routeId;
     }

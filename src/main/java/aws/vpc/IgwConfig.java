@@ -12,9 +12,9 @@ public class IgwConfig {
     private final Construct scope;
     private final Vpc vpc;
 
-    public IgwConfig(Construct scope) {
+    public IgwConfig(Construct scope, Vpc vpc) {
         this.scope = scope;
-        this.vpc = ScopeValidator.extractVpcBy(scope);
+        this.vpc = vpc;
     }
 
     public void configure(String igwId) {

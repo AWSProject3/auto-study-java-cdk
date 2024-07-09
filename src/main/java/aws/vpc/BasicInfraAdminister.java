@@ -8,6 +8,7 @@ import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.StackProps;
+import software.amazon.awscdk.services.ec2.Vpc;
 
 public class BasicInfraAdminister {
 
@@ -16,15 +17,15 @@ public class BasicInfraAdminister {
         Stack scope = new Stack(app, "VpcStack", StackProps.builder().env(env).build());
 
         VpcConfig vpcConfig = new VpcConfig(scope);
-        vpcConfig.configure("auto-study-vpc");
+        Vpc vpc = vpcConfig.configure("auto-study-vpc");
 
-        SubnetConfig subnetConfig = new SubnetConfig(scope);
+        SubnetConfig subnetConfig = new SubnetConfig(scope, vpc);
         List<SubnetDto> subnetDtos = subnetConfig.configure();
 
-        IgwConfig igwConfig = new IgwConfig(scope);
+        IgwConfig igwConfig = new IgwConfig(scope, vpc);
         igwConfig.configure("igw");
 
-        RouteTableConfig routeTableConfig = new RouteTableConfig(scope);
+        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc);
         routeTableConfig.configure(subnetDtos);
     }
 
