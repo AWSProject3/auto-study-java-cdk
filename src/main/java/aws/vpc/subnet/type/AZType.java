@@ -15,4 +15,8 @@ public enum AZType {
     public boolean existsFirstAZ() {
         return this.equals(AZ_1A);
     }
+
+    public String getValue() {
+        return this.value;
+    }
 }

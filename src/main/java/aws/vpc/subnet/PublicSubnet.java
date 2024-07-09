@@ -26,7 +26,7 @@ public class PublicSubnet {
         return CfnSubnet.Builder.create(scope, subnetId)
                 .vpcId(vpc.getVpcId())
                 .cidrBlock(cidr)
-                .availabilityZone(String.valueOf(az))
+                .availabilityZone(az.getValue())
                 .mapPublicIpOnLaunch(true)
                 .build();
     }
