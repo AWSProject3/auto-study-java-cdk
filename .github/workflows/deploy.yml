@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'temurin'  # Java distribution 추가
 
       - name: Install AWS CLI
         run: |
@@ -29,7 +29,7 @@ jobs:
         run: npm install -g aws-cdk
 
       - name: Install dependencies
-        run: mvn install
+        run: ./gradlew build
 
       - name: Deploy CDK Stack
         env:
