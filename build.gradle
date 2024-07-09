@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id 'com.github.node-gradle.node' version '3.0.1'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.1'
 }
 
 group 'app'
@@ -10,6 +11,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+application {
+    mainClassName = 'AutoCodeApplication'
 }
 
 repositories {
@@ -38,4 +43,31 @@ tasks.withType(JavaCompile) {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.named('shadowJar') {
+    archiveClassifier.set('')
+    manifest {
+        attributes 'Main-Class': 'AutoCodeApplication'
+    }
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('distZip') {
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.named('distTar') {
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.named('startScripts') {
+    dependsOn tasks.named('shadowJar')
+}
+
+build {
+    dependsOn tasks.named('shadowJar')
 }

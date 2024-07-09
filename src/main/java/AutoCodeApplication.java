@@ -10,9 +10,29 @@ public class AutoCodeApplication {
         infraAdminister.createInfra(app, "730335599027", "us-east-1");
 
         // rds
-        // eks
+
+//        /**
+//         *  eks
+//         */
+//        Stack stack = createStack(app, createEnv("544345130572", "ap-northeast-2"));
+
         System.out.println("complete");
 
         app.synth();
     }
+
+//    /**
+//     *
+//     * eks
+//     */
+//    private static Stack createStack(App app, Environment env) {
+//        return new Stack(app, "EksBlueprintStack", StackProps.builder().env(env).build());
+//    }
+//
+//    private static Environment createEnv(String account, String region) {
+//        return Environment.builder()
+//                .account(account)
+//                .region(region)
+//                .build();
+//    }
 }
