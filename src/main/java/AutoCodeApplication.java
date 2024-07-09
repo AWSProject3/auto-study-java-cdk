@@ -7,7 +7,7 @@ public class AutoCodeApplication {
         App app = new App();
 
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
-        infraAdminister.createInfra(app, "730335599027", "us-east-1");
+        infraAdminister.createInfra(app, "730335599027", "us-east-2");
 
         // rds
 
