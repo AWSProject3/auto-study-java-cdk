@@ -19,6 +19,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'  # Java distribution 추가
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # AWS CDK가 호환되는 Node.js 버전을 설정
+
       - name: Install AWS CLI
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
