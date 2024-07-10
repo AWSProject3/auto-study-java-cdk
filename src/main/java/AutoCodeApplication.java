@@ -1,4 +1,5 @@
 import aws.vpc.BasicInfraAdminister;
+import aws.vpc.common.VpcInfraManager;
 import aws.vpc.eks.EksAdminister;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.subnet.dto.BasicInfraDto;
@@ -10,13 +11,13 @@ public class AutoCodeApplication {
         App app = new App();
 
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
-        BasicInfraDto infraDto = infraAdminister.createInfra(app, "730335599027", "us-east-2");
+        VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, "730335599027", "us-east-2");
 
         RdsAdminister rdsAdminister = new RdsAdminister();
-        rdsAdminister.createInfra(app, "730335599027", "us-east-2", infraDto);
+        rdsAdminister.createInfra(app, "730335599027", "us-east-2", vpcInfraManager);
 
         EksAdminister eksAdminister = new EksAdminister();
-        eksAdminister.createInfra(app, "730335599027", "us-east-2", infraDto);
+        eksAdminister.createInfra(app, "730335599027", "us-east-2", vpcInfraManager);
 
         System.out.println("complete");
 

@@ -1,6 +1,6 @@
 package aws.vpc.rds;
 
-import aws.vpc.subnet.dto.BasicInfraDto;
+import aws.vpc.common.VpcInfraManager;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.Stack;
@@ -8,10 +8,10 @@ import software.amazon.awscdk.StackProps;
 
 public class RdsAdminister {
 
-    public void createInfra(App app, String account, String region, BasicInfraDto infraDto) {
+    public void createInfra(App app, String account, String region, VpcInfraManager vpcInfraManager) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        RdsConfig rdsConfig = new RdsConfig(stack, infraDto);
+        RdsConfig rdsConfig = new RdsConfig(stack, vpcInfraManager);
         rdsConfig.configure("rds-instance", "AutoStudyRds", "admin", "0912dltncks!VC");
     }
 

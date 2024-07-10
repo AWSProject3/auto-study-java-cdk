@@ -1,5 +1,6 @@
 package aws.vpc;
 
+import aws.vpc.common.VpcInfraManager;
 import aws.vpc.igw.IgwConfig;
 import aws.vpc.subnet.SubnetConfig;
 import aws.vpc.subnet.dto.BasicInfraDto;
@@ -14,7 +15,7 @@ import software.amazon.awscdk.services.ec2.Vpc;
 
 public class BasicInfraAdminister {
 
-    public BasicInfraDto createInfra(App app, String account, String region) {
+    public VpcInfraManager createInfra(App app, String account, String region) {
         Environment env = createEnv(account, region);
         Stack scope = new Stack(app, "VpcStack", StackProps.builder().env(env).build());
 
@@ -30,7 +31,7 @@ public class BasicInfraAdminister {
         RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc, subnetDtos, igwId);
         routeTableConfig.configure();
 
-        return new BasicInfraDto(subnetDtos, vpc.getVpcId());
+        return new VpcInfraManager(new BasicInfraDto(subnetDtos, vpc.getVpcId()));
     }
 
     private Environment createEnv(String account, String region) {
