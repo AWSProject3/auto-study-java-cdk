@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import software.amazon.awscdk.lambdalayer.kubectl.KubectlLayer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
@@ -41,13 +42,13 @@ public class EksConfig {
         Role masterRole = createMasterRole();
 
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
-                .version(KubernetesVersion.V1_25)
+                .version(KubernetesVersion.of("1.28"))
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
                 .vpcSubnets(Collections.singletonList(vpcInfraManager.createPrivateSubnetSelector(scope)))
                 .defaultCapacity(0)
-//                .kubectlLayer(new KubectlLayer(scope, "KubectlLayer"))
+                .kubectlLayer(new KubectlLayer(scope, "KubectlLayer"))
                 .build());
     }
 
