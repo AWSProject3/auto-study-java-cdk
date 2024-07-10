@@ -1,8 +1,6 @@
 import aws.vpc.BasicInfraAdminister;
-import aws.vpc.eks.EksAdminister;
 import aws.vpc.rds.RdsAdminister;
-import aws.vpc.subnet.dto.SubnetDto;
-import java.util.List;
+import aws.vpc.subnet.dto.BasicInfraDto;
 import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
@@ -11,13 +9,13 @@ public class AutoCodeApplication {
         App app = new App();
 
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
-        List<SubnetDto> subnetDtos = infraAdminister.createInfra(app, "730335599027", "us-east-2");
+        BasicInfraDto infraDto = infraAdminister.createInfra(app, "730335599027", "us-east-2");
 
 //        EksAdminister eksAdminister = new EksAdminister();
 //        eksAdminister.createInfra(app, "730335599027", "us-east-2", subnetDtos);
 
         RdsAdminister rdsAdminister = new RdsAdminister();
-        rdsAdminister.createInfra(app, "730335599027", "us-east-2");
+        rdsAdminister.createInfra(app, "730335599027", "us-east-2", infraDto);
 
         System.out.println("complete");
 
