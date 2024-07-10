@@ -5,6 +5,7 @@ import static aws.vpc.subnet.type.SubnetType.PUBLIC_TYPE;
 import aws.vpc.subnet.NatGatewayConfig;
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
+import aws.vpc.subnet.type.AZType;
 import java.util.Optional;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
@@ -63,11 +64,9 @@ public class RouteTableFactory {
     }
 
     private boolean hasRelatedPublicSubnet(SubnetDto subnetDto) {
-        String privateSubnetId = subnetDto.id();
-        String relatedPublicSubnetId = privateSubnetId.replace(TARGET, REPLACEMENT);
-
+        AZType az = subnetDto.az();
         return vpc.getPublicSubnets().stream()
-                .anyMatch(subnet -> subnet.getSubnetId().equals(relatedPublicSubnetId));
+                .anyMatch(subnet -> subnet.getAvailabilityZone().equals(az.getValue()));
     }
 
     private NatGatewayDto createNatGateway(SubnetDto subnetDto) {
