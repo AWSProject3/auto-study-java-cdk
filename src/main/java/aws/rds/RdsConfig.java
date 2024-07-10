@@ -2,7 +2,6 @@ package aws.rds;
 
 import static software.amazon.awscdk.SecretValue.plainText;
 
-import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
@@ -48,7 +47,6 @@ public class RdsConfig {
                 .subnetType(SubnetType.PRIVATE_WITH_EGRESS)
                 .build();
     }
-
 
     private SubnetGroup createDbSubnetGroup(String rdsId, IVpc vpc, SubnetSelection privateSubnets) {
         return SubnetGroup.Builder.create(scope, rdsId + "-SubnetGroup")
