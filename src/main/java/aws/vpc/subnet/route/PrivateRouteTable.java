@@ -66,11 +66,4 @@ public class PrivateRouteTable implements RouteTable {
                 .natGatewayId(natGateway.id())
                 .build();
     }
-
-//    private void assignRoute(String routeId, String routeTableId) {
-//        CfnRoute.Builder.create(scope, routeId)
-//                .routeTableId(routeTableId)
-//                .destinationCidrBlock(CIDR)
-//                .build();
-//    }
 }

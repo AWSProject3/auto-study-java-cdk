@@ -18,9 +18,6 @@ public class RouteTableFactory {
     private static final String PRIVATE_ROUTE_TABLE_PREFIX = "PrivateRouteTable";
     private static final String PRIVATE_ROUTE_PREFIX = "PrivateRoute";
 
-    private static final String TARGET = "PrivateSubnet";
-    private static final String REPLACEMENT = "PublicSubnet";
-
     private final Construct scope;
     private final Vpc vpc;
     private final List<SubnetDto> subnetDtos;
@@ -31,10 +28,10 @@ public class RouteTableFactory {
         this.subnetDtos = subnetDtos;
     }
 
-    public RouteTable createRouteTable(SubnetDto subnetDto) {
+    public RouteTable createRouteTable(SubnetDto subnetDto, String igwId) {
         String suffix = createSuffix(subnetDto);
         if (isPublicSubnet(subnetDto)) {
-            return createPublicRouteTable(suffix);
+            return createPublicRouteTable(suffix, igwId);
         }
         return createPrivateRouteTable(suffix, subnetDto);
     }
@@ -50,10 +47,10 @@ public class RouteTableFactory {
         return PUBLIC_TYPE.equals(subnetDto.type());
     }
 
-    private RouteTable createPublicRouteTable(String suffix) {
+    private RouteTable createPublicRouteTable(String suffix, String igwId) {
         String publicRouteTableId = PUBLIC_ROUTE_TABLE_PREFIX + suffix;
         String publicRouteId = PUBLIC_ROUTE_PREFIX + suffix;
-        return new PublicRouteTable(scope, vpc, publicRouteTableId, publicRouteId);
+        return new PublicRouteTable(scope, vpc, publicRouteTableId, publicRouteId, igwId);
     }
 
     private RouteTable createPrivateRouteTable(String suffix, SubnetDto subnetDto) {

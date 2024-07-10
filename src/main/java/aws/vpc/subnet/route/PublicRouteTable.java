@@ -14,12 +14,14 @@ public class PublicRouteTable implements RouteTable {
     private final Vpc vpc;
     private final String routeTableId;
     private final String routeId;
+    private final String igwId;
 
-    public PublicRouteTable(Construct scope, Vpc vpc, String routeTableId, String routeId) {
+    public PublicRouteTable(Construct scope, Vpc vpc, String routeTableId, String routeId, String igwId) {
         this.scope = scope;
         this.vpc = vpc;
         this.routeTableId = routeTableId;
         this.routeId = routeId;
+        this.igwId = igwId;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class PublicRouteTable implements RouteTable {
         CfnRoute.Builder.create(scope, routeId)
                 .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
-                .gatewayId(vpc.getInternetGatewayId())
+                .gatewayId(igwId)
                 .build();
     }
 }

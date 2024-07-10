@@ -23,9 +23,9 @@ public class BasicInfraAdminister {
         List<SubnetDto> subnetDtos = subnetConfig.configure();
 
         IgwConfig igwConfig = new IgwConfig(scope, vpc);
-        igwConfig.configure("igw");
+        String igwId = igwConfig.configure("igw");
 
-        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc, subnetDtos);
+        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc, subnetDtos, igwId);
         routeTableConfig.configure();
     }
 
