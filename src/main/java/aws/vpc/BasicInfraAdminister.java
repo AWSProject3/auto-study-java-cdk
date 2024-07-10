@@ -17,7 +17,7 @@ public class BasicInfraAdminister {
         Stack scope = new Stack(app, "VpcStack", StackProps.builder().env(env).build());
 
         VpcConfig vpcConfig = new VpcConfig(scope);
-        Vpc vpc = vpcConfig.configure("auto-study-vpc");
+        Vpc vpc = vpcConfig.configureEmptyVpc("auto-study-vpc");
 
         SubnetConfig subnetConfig = new SubnetConfig(scope, vpc);
         List<SubnetDto> subnetDtos = subnetConfig.configure();

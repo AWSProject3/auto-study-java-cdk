@@ -12,7 +12,7 @@ public class VpcConfig {
         this.scope = scope;
     }
 
-    public Vpc configure(String vpcId) {
+    public Vpc configureEmptyVpc(String vpcId) {
         return Vpc.Builder.create(scope, vpcId)
                 .ipAddresses(IpAddresses.cidr("20.0.0.0/16"))
                 .maxAzs(2)

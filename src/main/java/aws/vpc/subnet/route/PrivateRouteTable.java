@@ -56,10 +56,7 @@ public class PrivateRouteTable implements RouteTable {
     }
 
     private void routePrivateSubnetToNatGateway(String routeTableId) {
-        natGateway.ifPresentOrElse(
-                ngw -> assignRoute(privateRouteId, routeTableId, ngw),
-                () -> assignRoute(privateRouteId, routeTableId)
-        );
+        natGateway.ifPresent(ngw -> assignRoute(privateRouteId, routeTableId, ngw));
     }
 
     private void assignRoute(String routeId, String routeTableId, NatGatewayDto natGateway) {
@@ -70,10 +67,10 @@ public class PrivateRouteTable implements RouteTable {
                 .build();
     }
 
-    private void assignRoute(String routeId, String routeTableId) {
-        CfnRoute.Builder.create(scope, routeId)
-                .routeTableId(routeTableId)
-                .destinationCidrBlock(CIDR)
-                .build();
-    }
+//    private void assignRoute(String routeId, String routeTableId) {
+//        CfnRoute.Builder.create(scope, routeId)
+//                .routeTableId(routeTableId)
+//                .destinationCidrBlock(CIDR)
+//                .build();
+//    }
 }
