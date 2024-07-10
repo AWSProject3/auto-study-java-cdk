@@ -1,16 +1,21 @@
 package aws.vpc.eks;
 
 import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
+import static java.util.stream.Collectors.toList;
 
 import aws.vpc.subnet.dto.BasicInfraDto;
 import aws.vpc.subnet.dto.SubnetDto;
+import aws.vpc.type.AzType;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import software.amazon.awscdk.CfnTag;
 import software.amazon.awscdk.services.ec2.CfnSubnet;
+import software.amazon.awscdk.services.ec2.ISubnet;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ec2.Subnet;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
-import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ec2.VpcAttributes;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
@@ -30,23 +35,38 @@ public class EksConfig {
     private static final String DEFAULT_VPC_ID = "auto-study-vpc";
 
     private final Construct scope;
+    private final BasicInfraDto infraDto;
 
-    public EksConfig(Construct scope) {
+    public EksConfig(Construct scope, BasicInfraDto infraDto) {
         this.scope = scope;
+        this.infraDto = infraDto;
     }
 
-    public void configure(String clusterName, BasicInfraDto infraDto) {
-        IVpc vpc = findExistingVpc(infraDto.vpcId());
+    public void configure(String clusterName) {
+        IVpc vpc = findExistingVpc();
         Cluster cluster = createCluster(clusterName, vpc);
-        tagSubnetsForEks(clusterName, infraDto.subnetDtos());
+        tagSubnetsForEks(clusterName);
         configureNodeGroup(cluster);
         configureAddons(cluster);
     }
 
-    private IVpc findExistingVpc(String vpcId) {
+    private IVpc findExistingVpc() {
         return Vpc.fromVpcAttributes(scope, DEFAULT_VPC_ID, VpcAttributes.builder()
-                .vpcId(vpcId)
+                .vpcId(infraDto.vpcId())
+                .availabilityZones(getAvailabilityZones())
+                .privateSubnetIds(findPrivateSubnetIds())
                 .build());
+    }
+
+    private List<String> getAvailabilityZones() {
+        return Arrays.stream(AzType.values()).map(AzType::getValue).toList();
+    }
+
+    private List<String> findPrivateSubnetIds() {
+        return infraDto.subnetDtos().stream()
+                .filter(subnetDto -> subnetDto.type() == aws.vpc.type.SubnetType.PRIVATE_TYPE)
+                .map(SubnetDto::id)
+                .toList();
     }
 
     private Cluster createCluster(String clusterName, IVpc vpc) {
@@ -57,15 +77,25 @@ public class EksConfig {
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
-                .vpcSubnets(List.of(SubnetSelection.builder()
-                        .subnetType(SubnetType.PRIVATE_WITH_EGRESS)
-                        .build()))
+                .vpcSubnets(Collections.singletonList(createVpcSubnets()))
                 .defaultCapacity(0)
                 .build());
     }
 
-    private void tagSubnetsForEks(String clusterName, List<SubnetDto> subnetDtos) {
-        for (SubnetDto subnetDto : subnetDtos) {
+    private SubnetSelection createVpcSubnets() {
+        return SubnetSelection.builder()
+                .subnets(findISubnets())
+                .build();
+    }
+
+    private List<ISubnet> findISubnets() {
+        return findPrivateSubnetIds().stream()
+                .map(id -> Subnet.fromSubnetId(scope, "PrivateSubnet" + id, id))
+                .collect(toList());
+    }
+
+    private void tagSubnetsForEks(String clusterName) {
+        for (SubnetDto subnetDto : infraDto.subnetDtos()) {
             String subnetId = subnetDto.id();
             addTagsToSubnet(clusterName, subnetId, subnetDto.type() == PUBLIC_TYPE);
         }

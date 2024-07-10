@@ -12,8 +12,8 @@ public class EksAdminister {
     public void createInfra(App app, String account, String region, BasicInfraDto infraDto) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        EksConfig eksConfig = new EksConfig(stack);
-        eksConfig.configure("auto-study-eks", infraDto);
+        EksConfig eksConfig = new EksConfig(stack, infraDto);
+        eksConfig.configure("auto-study-eks");
 
         EcrConfig ecrConfig = new EcrConfig(stack);
         ecrConfig.configure("auto-study-app", 10);
