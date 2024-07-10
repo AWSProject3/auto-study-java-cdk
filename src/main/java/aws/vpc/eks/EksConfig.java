@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import software.amazon.awscdk.lambdalayer.kubectl.KubectlLayer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
@@ -18,10 +19,6 @@ import software.amazon.awscdk.services.eks.NodegroupAmiType;
 import software.amazon.awscdk.services.eks.NodegroupOptions;
 import software.amazon.awscdk.services.iam.AccountRootPrincipal;
 import software.amazon.awscdk.services.iam.Role;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.LayerVersion;
-import software.amazon.awscdk.services.lambda.LayerVersionProps;
-import software.amazon.awscdk.services.lambda.Runtime;
 import software.constructs.Construct;
 
 public class EksConfig {
@@ -51,17 +48,16 @@ public class EksConfig {
                 .vpc(vpc)
                 .vpcSubnets(Collections.singletonList(vpcInfraManager.createPrivateSubnetSelector(scope)))
                 .defaultCapacity(0)
-                .kubectlLayer(createKubectlLayer())
+                .kubectlLayer(new KubectlLayer(scope, "KubectlLayer"))
                 .build());
     }
 
-    private LayerVersion createKubectlLayer() {
-        return new LayerVersion(scope, "KubectlLayer", LayerVersionProps.builder()
-                .code(Code.fromAsset("path/to/kubectl/layer"))
-                .compatibleRuntimes(Collections.singletonList(Runtime.PYTHON_3_11))
-                .description("Layer for kubectl")
-                .build());
-    }
+//    private LayerVersion createKubectlLayer() {
+//        return new LayerVersion(scope, "KubectlLayer", LayerVersionProps.builder()
+//                .compatibleRuntimes(Collections.singletonList(Runtime.PYTHON_3_11))
+//                .description("Layer for kubectl")
+//                .build());
+//    }
 
     private void tagSubnetsForEks(String clusterName) {
         tagPublicSubnets();
