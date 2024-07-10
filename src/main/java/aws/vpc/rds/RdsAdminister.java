@@ -1,4 +1,4 @@
-package aws.rds;
+package aws.vpc.rds;
 
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;

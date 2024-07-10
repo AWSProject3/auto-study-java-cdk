@@ -1,7 +1,7 @@
 package aws.vpc.subnet.dto;
 
-import aws.vpc.subnet.type.AzType;
-import aws.vpc.subnet.type.SubnetType;
+import aws.vpc.type.AzType;
+import aws.vpc.type.SubnetType;
 
 public record SubnetDto(SubnetType type, String id, AzType az) {
 

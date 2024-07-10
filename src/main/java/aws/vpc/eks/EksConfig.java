@@ -1,7 +1,12 @@
-package aws.eks;
+package aws.vpc.eks;
 
+import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
+
+import aws.vpc.subnet.dto.SubnetDto;
 import java.util.Arrays;
 import java.util.List;
+import software.amazon.awscdk.CfnTag;
+import software.amazon.awscdk.services.ec2.CfnSubnet;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
@@ -30,9 +35,10 @@ public class EksConfig {
         this.scope = scope;
     }
 
-    public void configure(String clusterName) {
+    public void configure(String clusterName, List<SubnetDto> subnetDtos) {
         IVpc vpc = lookupExistingVpc();
         Cluster cluster = createCluster(clusterName, vpc);
+        tagSubnetsForEks(clusterName, subnetDtos);
         configureNodeGroup(cluster);
         configureAddons(cluster);
     }
@@ -45,7 +51,7 @@ public class EksConfig {
         Role masterRole = createMasterRole();
 
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
-                .version(KubernetesVersion.V1_27)
+                .version(KubernetesVersion.V1_25)
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
@@ -54,6 +60,39 @@ public class EksConfig {
                         .build()))
                 .defaultCapacity(0)
                 .build());
+    }
+
+    private void tagSubnetsForEks(String clusterName, List<SubnetDto> subnetDtos) {
+        for (SubnetDto subnetDto : subnetDtos) {
+            String subnetId = subnetDto.id();
+            if (subnetDto.type() == PUBLIC_TYPE) {
+                addTagsToSubnet(clusterName, subnetId, true);
+            } else {
+                addTagsToSubnet(clusterName, subnetId, false);
+            }
+        }
+    }
+
+    private void addTagsToSubnet(String clusterName, String subnetId, boolean isPublic) {
+        List<CfnTag> tags = isPublic ? createPublicTags(clusterName) : createPrivateTags(clusterName);
+        CfnSubnet cfnSubnet = (CfnSubnet) scope.getNode().tryFindChild(subnetId);
+        if (cfnSubnet != null) {
+            cfnSubnet.setTagsRaw(tags);
+        }
+    }
+
+    private List<CfnTag> createPublicTags(String clusterName) {
+        return Arrays.asList(
+                CfnTag.builder().key("kubernetes.io/role/elb").value("1").build(),
+                CfnTag.builder().key("kubernetes.io/cluster/" + clusterName).value("shared").build()
+        );
+    }
+
+    private List<CfnTag> createPrivateTags(String clusterName) {
+        return Arrays.asList(
+                CfnTag.builder().key("kubernetes.io/role/internal-elb").value("1").build(),
+                CfnTag.builder().key("kubernetes.io/cluster/" + clusterName).value("shared").build()
+        );
     }
 
     private Role createMasterRole() {

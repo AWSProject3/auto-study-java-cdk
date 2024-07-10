@@ -1,7 +1,7 @@
 package aws.vpc.subnet;
 
-import static aws.vpc.subnet.type.AzType.AZ_1A;
-import static aws.vpc.subnet.type.AzType.AZ_1B;
+import static aws.vpc.type.AzType.AZ_1A;
+import static aws.vpc.type.AzType.AZ_1B;
 
 import aws.vpc.subnet.dto.SubnetDto;
 import java.util.ArrayList;

@@ -1,6 +1,5 @@
-package aws.vpc;
+package aws.vpc.igw;
 
-import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.services.ec2.CfnInternetGateway;
 import software.amazon.awscdk.services.ec2.CfnVPCGatewayAttachment;
 import software.amazon.awscdk.services.ec2.Vpc;

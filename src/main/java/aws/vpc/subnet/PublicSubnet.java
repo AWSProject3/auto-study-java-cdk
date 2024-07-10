@@ -1,8 +1,8 @@
 package aws.vpc.subnet;
 
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.subnet.type.AzType;
-import aws.vpc.subnet.type.SubnetType;
+import aws.vpc.type.AzType;
+import aws.vpc.type.SubnetType;
 import software.amazon.awscdk.services.ec2.CfnSubnet;
 import software.amazon.awscdk.services.ec2.CfnSubnet.Builder;
 import software.amazon.awscdk.services.ec2.Vpc;

@@ -1,4 +1,4 @@
-package aws.vpc.subnet.type;
+package aws.vpc.type;
 
 public enum SubnetType {
 

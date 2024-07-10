@@ -1,7 +1,7 @@
-package aws.vpc.subnet;
+package aws.vpc.subnet.ngw;
 
 
-import static aws.vpc.subnet.type.SubnetType.PUBLIC_TYPE;
+import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
 
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;

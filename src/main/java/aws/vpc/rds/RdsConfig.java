@@ -1,4 +1,4 @@
-package aws.rds;
+package aws.vpc.rds;
 
 import static software.amazon.awscdk.SecretValue.unsafePlainText;
 
