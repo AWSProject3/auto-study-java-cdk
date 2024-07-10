@@ -45,7 +45,7 @@ public class EksConfig {
         Role masterRole = createMasterRole();
 
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
-                .version(KubernetesVersion.V1_21)
+                .version(KubernetesVersion.V1_27)
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
@@ -76,23 +76,26 @@ public class EksConfig {
     private void configureAddons(Cluster cluster) {
         for (CfnAddon addOn : createAddons(cluster.getClusterName())) {
             cluster.addAutoScalingGroupCapacity(addOn.getNode().getId(),
-                    AutoScalingGroupCapacityOptions.builder().build());
+                    AutoScalingGroupCapacityOptions
+                            .builder()
+                            .instanceType(new InstanceType("m3.xlarge"))
+                            .build()
+            );
         }
     }
 
     private List<CfnAddon> createAddons(String clusterName) {
-        CfnAddonProps props = createAddonProps(clusterName);
-        List<CfnAddon> addOns = Arrays.asList(
-                new CfnAddon(scope, "VpcCniAddon", props),
-                new CfnAddon(scope, "CoreDnsAddon", props),
-                new CfnAddon(scope, "KubeProxyAddon", props),
-                new CfnAddon(scope, "AwsLoadBalancerControllerAddon", props),
-                new CfnAddon(scope, "ArgoCdAddon", props)
+        return Arrays.asList(
+                new CfnAddon(scope, "VpcCniAddon", createAddonProps(clusterName, "VpcCni")),
+                new CfnAddon(scope, "CoreDnsAddon", createAddonProps(clusterName, "CoreDns")),
+                new CfnAddon(scope, "KubeProxyAddon", createAddonProps(clusterName, "KubeProxy")),
+                new CfnAddon(scope, "AwsLoadBalancerControllerAddon",
+                        createAddonProps(clusterName, "AwsLoadBalancerController")),
+                new CfnAddon(scope, "ArgoCdAddon", createAddonProps(clusterName, "ArgoCd"))
         );
-        return addOns;
     }
 
-    private CfnAddonProps createAddonProps(String clusterName) {
-        return CfnAddonProps.builder().clusterName(clusterName).build();
+    private CfnAddonProps createAddonProps(String clusterName, String addonName) {
+        return CfnAddonProps.builder().clusterName(clusterName).addonName(addonName).build();
     }
 }

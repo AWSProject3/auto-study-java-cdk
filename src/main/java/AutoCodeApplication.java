@@ -1,3 +1,5 @@
+import aws.eks.EksAdminister;
+import aws.rds.RdsAdminister;
 import aws.vpc.BasicInfraAdminister;
 import software.amazon.awscdk.App;
 
@@ -9,32 +11,14 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         infraAdminister.createInfra(app, "730335599027", "us-east-2");
 
-        // rds
+        EksAdminister eksAdminister = new EksAdminister();
+        eksAdminister.createInfra(app, "730335599027", "us-east-2");
 
-//        /**
-//         *  eks
-//         */
-//        Stack stack = createStack(app, createEnv("544345130572", "ap-northeast-2"));
+        RdsAdminister rdsAdminister = new RdsAdminister();
+        rdsAdminister.createInfra(app, "730335599027", "us-east-2");
 
         System.out.println("complete");
 
         app.synth();
     }
-
-//    /**
-//     *
-//     * eks
-//     */
-//    private static Stack createStack(App app, Environment env) {
-//        return new Stack(app, "EksBlueprintStack", StackProps.builder().env(env).build());
-//    }
-//
-//    private static Environment createEnv(String account, String region) {
-//        return Environment.builder()
-//                .account(account)
-//                .region(region)
-//                .build();
-//    }
-
-    //action//
 }

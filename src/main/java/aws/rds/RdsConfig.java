@@ -1,6 +1,6 @@
 package aws.rds;
 
-import static software.amazon.awscdk.SecretValue.plainText;
+import static software.amazon.awscdk.SecretValue.unsafePlainText;
 
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
@@ -65,7 +65,7 @@ public class RdsConfig {
                         .version(MysqlEngineVersion.VER_8_0)
                         .build()))
                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.SMALL))
-                .credentials(Credentials.fromPassword(userName, plainText(userPassword)))
+                .credentials(Credentials.fromPassword(userName, unsafePlainText(userPassword)))
                 .vpc(vpc)
                 .vpcSubnets(privateSubnets)
                 .subnetGroup(subnetGroup)
