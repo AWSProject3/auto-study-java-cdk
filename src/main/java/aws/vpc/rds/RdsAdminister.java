@@ -12,7 +12,7 @@ public class RdsAdminister {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
         RdsConfig rdsConfig = new RdsConfig(stack, infraDto);
-        rdsConfig.configure("rds-instance", "AutoStudyRds", "admin", "0912dltncks@#$");
+        rdsConfig.configure("rds-instance", "AutoStudyRds", "admin", "0912dltncks!VC");
     }
 
     private Stack createStack(App app, Environment env) {
