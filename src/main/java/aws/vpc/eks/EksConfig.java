@@ -2,6 +2,7 @@ package aws.vpc.eks;
 
 import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
 
+import aws.vpc.subnet.dto.BasicInfraDto;
 import aws.vpc.subnet.dto.SubnetDto;
 import java.util.List;
 import software.amazon.awscdk.CfnTag;
@@ -11,7 +12,7 @@ import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.ec2.VpcLookupOptions;
+import software.amazon.awscdk.services.ec2.VpcAttributes;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
 import software.amazon.awscdk.services.eks.CapacityType;
 import software.amazon.awscdk.services.eks.CfnAddon;
@@ -34,16 +35,18 @@ public class EksConfig {
         this.scope = scope;
     }
 
-    public void configure(String clusterName, List<SubnetDto> subnetDtos) {
-        IVpc vpc = lookupExistingVpc();
+    public void configure(String clusterName, BasicInfraDto infraDto) {
+        IVpc vpc = findExistingVpc(infraDto.vpcId());
         Cluster cluster = createCluster(clusterName, vpc);
-        tagSubnetsForEks(clusterName, subnetDtos);
+        tagSubnetsForEks(clusterName, infraDto.subnetDtos());
         configureNodeGroup(cluster);
         configureAddons(cluster);
     }
 
-    private IVpc lookupExistingVpc() {
-        return Vpc.fromLookup(scope, DEFAULT_VPC_ID, VpcLookupOptions.builder().build());
+    private IVpc findExistingVpc(String vpcId) {
+        return Vpc.fromVpcAttributes(scope, DEFAULT_VPC_ID, VpcAttributes.builder()
+                .vpcId(vpcId)
+                .build());
     }
 
     private Cluster createCluster(String clusterName, IVpc vpc) {
