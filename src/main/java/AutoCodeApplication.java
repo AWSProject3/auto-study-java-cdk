@@ -2,7 +2,6 @@ import aws.vpc.BasicInfraAdminister;
 import aws.vpc.common.VpcInfraManager;
 import aws.vpc.eks.EksAdminister;
 import aws.vpc.rds.RdsAdminister;
-import aws.vpc.subnet.dto.BasicInfraDto;
 import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
@@ -23,4 +22,5 @@ public class AutoCodeApplication {
 
         app.synth();
     }
+    // action
 }
