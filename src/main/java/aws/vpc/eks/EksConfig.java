@@ -3,7 +3,6 @@ package aws.vpc.eks;
 import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
 
 import aws.vpc.subnet.dto.SubnetDto;
-import java.util.Arrays;
 import java.util.List;
 import software.amazon.awscdk.CfnTag;
 import software.amazon.awscdk.services.ec2.CfnSubnet;
@@ -65,31 +64,26 @@ public class EksConfig {
     private void tagSubnetsForEks(String clusterName, List<SubnetDto> subnetDtos) {
         for (SubnetDto subnetDto : subnetDtos) {
             String subnetId = subnetDto.id();
-            if (subnetDto.type() == PUBLIC_TYPE) {
-                addTagsToSubnet(clusterName, subnetId, true);
-            } else {
-                addTagsToSubnet(clusterName, subnetId, false);
-            }
+            addTagsToSubnet(clusterName, subnetId, subnetDto.type() == PUBLIC_TYPE);
         }
     }
 
     private void addTagsToSubnet(String clusterName, String subnetId, boolean isPublic) {
-        List<CfnTag> tags = isPublic ? createPublicTags(clusterName) : createPrivateTags(clusterName);
+        List<CfnTag> tags = isPublic ? createPublicTags() : createPrivateTags(clusterName);
         CfnSubnet cfnSubnet = (CfnSubnet) scope.getNode().tryFindChild(subnetId);
         if (cfnSubnet != null) {
             cfnSubnet.setTagsRaw(tags);
         }
     }
 
-    private List<CfnTag> createPublicTags(String clusterName) {
-        return Arrays.asList(
-                CfnTag.builder().key("kubernetes.io/role/elb").value("1").build(),
-                CfnTag.builder().key("kubernetes.io/cluster/" + clusterName).value("shared").build()
+    private List<CfnTag> createPublicTags() {
+        return List.of(
+                CfnTag.builder().key("kubernetes.io/role/elb").value("1").build()
         );
     }
 
     private List<CfnTag> createPrivateTags(String clusterName) {
-        return Arrays.asList(
+        return List.of(
                 CfnTag.builder().key("kubernetes.io/role/internal-elb").value("1").build(),
                 CfnTag.builder().key("kubernetes.io/cluster/" + clusterName).value("shared").build()
         );
@@ -124,7 +118,7 @@ public class EksConfig {
     }
 
     private List<CfnAddon> createAddons(String clusterName) {
-        return Arrays.asList(
+        return List.of(
                 new CfnAddon(scope, "VpcCniAddon", createAddonProps(clusterName, "VpcCni")),
                 new CfnAddon(scope, "CoreDnsAddon", createAddonProps(clusterName, "CoreDns")),
                 new CfnAddon(scope, "KubeProxyAddon", createAddonProps(clusterName, "KubeProxy")),
