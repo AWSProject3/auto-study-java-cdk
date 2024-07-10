@@ -13,8 +13,8 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         List<SubnetDto> subnetDtos = infraAdminister.createInfra(app, "730335599027", "us-east-2");
 
-        EksAdminister eksAdminister = new EksAdminister();
-        eksAdminister.createInfra(app, "730335599027", "us-east-2", subnetDtos);
+//        EksAdminister eksAdminister = new EksAdminister();
+//        eksAdminister.createInfra(app, "730335599027", "us-east-2", subnetDtos);
 
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, "730335599027", "us-east-2");
