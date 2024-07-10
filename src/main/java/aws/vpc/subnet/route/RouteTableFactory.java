@@ -5,7 +5,8 @@ import static aws.vpc.subnet.type.SubnetType.PUBLIC_TYPE;
 import aws.vpc.subnet.NatGatewayConfig;
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.subnet.type.AZType;
+import aws.vpc.subnet.type.AzType;
+import java.util.List;
 import java.util.Optional;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
@@ -22,10 +23,12 @@ public class RouteTableFactory {
 
     private final Construct scope;
     private final Vpc vpc;
+    private final List<SubnetDto> subnetDtos;
 
-    public RouteTableFactory(Construct scope, Vpc vpc) {
+    public RouteTableFactory(Construct scope, Vpc vpc, List<SubnetDto> subnetDtos) {
         this.scope = scope;
         this.vpc = vpc;
+        this.subnetDtos = subnetDtos;
     }
 
     public RouteTable createRouteTable(SubnetDto subnetDto) {
@@ -60,13 +63,12 @@ public class RouteTableFactory {
     }
 
     private Optional<NatGatewayDto> createOptionalNgw(SubnetDto subnetDto) {
-        return hasRelatedPublicSubnet(subnetDto) ? Optional.of(createNatGateway(subnetDto)) : Optional.empty();
+        return findRelatedPublicSubnet(subnetDto).map(this::createNatGateway);
     }
 
-    private boolean hasRelatedPublicSubnet(SubnetDto subnetDto) {
-        AZType az = subnetDto.az();
-        return vpc.getPublicSubnets().stream()
-                .anyMatch(subnet -> subnet.getAvailabilityZone().equals(az.getValue()));
+    private Optional<SubnetDto> findRelatedPublicSubnet(SubnetDto subnetDto) {
+        AzType az = subnetDto.az();
+        return subnetDtos.stream().filter(subnet -> subnet.az() == az && subnet.type() == PUBLIC_TYPE).findFirst();
     }
 
     private NatGatewayDto createNatGateway(SubnetDto subnetDto) {

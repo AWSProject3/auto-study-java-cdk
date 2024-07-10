@@ -6,13 +6,15 @@ import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
 public class RouteTableConfig {
+    private final List<SubnetDto> subnetDtos;
     private final RouteTableFactory routeTableFactory;
 
-    public RouteTableConfig(Construct scope, Vpc vpc) {
-        this.routeTableFactory = new RouteTableFactory(scope, vpc);
+    public RouteTableConfig(Construct scope, Vpc vpc, List<SubnetDto> subnetDtos) {
+        this.subnetDtos = subnetDtos;
+        this.routeTableFactory = new RouteTableFactory(scope, vpc, subnetDtos);
     }
 
-    public void configure(List<SubnetDto> subnetDtos) {
+    public void configure() {
         subnetDtos.forEach(subnetDto -> routeTableFactory.createRouteTable(subnetDto).configure(subnetDto));
     }
 }

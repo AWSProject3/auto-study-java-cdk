@@ -25,8 +25,8 @@ public class BasicInfraAdminister {
         IgwConfig igwConfig = new IgwConfig(scope, vpc);
         igwConfig.configure("igw");
 
-        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc);
-        routeTableConfig.configure(subnetDtos);
+        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc, subnetDtos);
+        routeTableConfig.configure();
     }
 
     private Environment createEnv(String account, String region) {

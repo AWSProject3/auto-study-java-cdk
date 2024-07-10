@@ -1,14 +1,14 @@
 package aws.vpc.subnet.type;
 
 
-public enum AZType {
+public enum AzType {
 
     AZ_1A("us-east-2a"),
     AZ_1B("us-east-2b");
 
     private final String value;
 
-    AZType(String value) {
+    AzType(String value) {
         this.value = value;
     }
 
