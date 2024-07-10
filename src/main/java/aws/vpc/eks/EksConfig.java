@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import software.amazon.awscdk.CfnTag;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
@@ -42,7 +41,7 @@ public class EksConfig {
         Role masterRole = createMasterRole();
 
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
-                .version(KubernetesVersion.V1_25)
+                .version(KubernetesVersion.V1_27)
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
@@ -99,12 +98,12 @@ public class EksConfig {
 
     private List<CfnAddon> createAddons(String clusterName) {
         return List.of(
-                new CfnAddon(scope, "VpcCniAddon", createAddonProps(clusterName, "VpcCni")),
-                new CfnAddon(scope, "CoreDnsAddon", createAddonProps(clusterName, "CoreDns")),
-                new CfnAddon(scope, "KubeProxyAddon", createAddonProps(clusterName, "KubeProxy")),
-                new CfnAddon(scope, "AwsLoadBalancerControllerAddon",
-                        createAddonProps(clusterName, "AwsLoadBalancerController")),
-                new CfnAddon(scope, "ArgoCdAddon", createAddonProps(clusterName, "ArgoCd"))
+                new CfnAddon(scope, "VpcCniAddon", createAddonProps(clusterName, "vpc-cni")),
+                new CfnAddon(scope, "CoreDnsAddon", createAddonProps(clusterName, "coredns")),
+                new CfnAddon(scope, "KubeProxyAddon", createAddonProps(clusterName, "kube-proxy"))
+//                new CfnAddon(scope, "AwsLoadBalancerControllerAddon",
+//                        createAddonProps(clusterName, "aws-load-balancer-controller")),
+//                new CfnAddon(scope, "ArgoCdAddon", createAddonProps(clusterName, "ArgoCd"))
         );
     }
 
