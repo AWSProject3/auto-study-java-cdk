@@ -11,8 +11,8 @@ public class RdsAdminister {
     public void createInfra(App app, String account, String region, BasicInfraDto infraDto) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        RdsConfig rdsConfig = new RdsConfig(stack ,infraDto);
-        rdsConfig.configure("rds-instance", "auto-study-rds", "admin", "1234");
+        RdsConfig rdsConfig = new RdsConfig(stack, infraDto);
+        rdsConfig.configure("rds-instance", "AutoStudyRds", "admin", "1234");
     }
 
     private Stack createStack(App app, Environment env) {
