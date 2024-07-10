@@ -18,6 +18,10 @@ import software.amazon.awscdk.services.eks.NodegroupAmiType;
 import software.amazon.awscdk.services.eks.NodegroupOptions;
 import software.amazon.awscdk.services.iam.AccountRootPrincipal;
 import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.lambda.Code;
+import software.amazon.awscdk.services.lambda.LayerVersion;
+import software.amazon.awscdk.services.lambda.LayerVersionProps;
+import software.amazon.awscdk.services.lambda.Runtime;
 import software.constructs.Construct;
 
 public class EksConfig {
@@ -47,6 +51,15 @@ public class EksConfig {
                 .vpc(vpc)
                 .vpcSubnets(Collections.singletonList(vpcInfraManager.createPrivateSubnetSelector(scope)))
                 .defaultCapacity(0)
+                .kubectlLayer(createKubectlLayer())
+                .build());
+    }
+
+    private LayerVersion createKubectlLayer() {
+        return new LayerVersion(scope, "KubectlLayer", LayerVersionProps.builder()
+                .code(Code.fromAsset("path/to/kubectl/layer"))
+                .compatibleRuntimes(Collections.singletonList(Runtime.PYTHON_3_11))
+                .description("Layer for kubectl")
                 .build());
     }
 
