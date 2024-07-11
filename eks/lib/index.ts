@@ -31,6 +31,12 @@ export class EksConfigStack extends cdk.Stack {
             handler: 'getVpcInfo.handler',
             code: lambda.Code.fromAsset('lambda'),
             layers: [lambdaLayer],
+            role: new iam.Role(this, 'LambdaExecutionRole', {
+                assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+                managedPolicies: [
+                    iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+                ],
+            }),
         });
 
         const vpcInfoProvider = new cr.Provider(this, 'VpcInfoProvider', {
