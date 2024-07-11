@@ -13,6 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Debug - List directory contents
+        run: |
+          pwd
+          ls -la
+          ls -la eks
+
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -22,7 +28,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'  # Changed to 18 for better compatibility
+          node-version: '18'
 
       - name: Install AWS CLI
         run: |
@@ -40,7 +46,7 @@ jobs:
         run: ./gradlew clean build
 
       - name: Install TypeScript dependencies
-        working-directory: ./eks
+        working-directory: eks
         run: |
           npm ci
           npm run build
@@ -66,6 +72,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-2
+        working-directory: eks
         run: |
-          cd eks
+          npm run build
           cdk deploy --require-approval never --all -a "npx ts-node lib/eks-config-stack.ts"
