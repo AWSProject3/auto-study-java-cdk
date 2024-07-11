@@ -34,8 +34,8 @@ def handler(event, context):
     logger.info(f"Public Subnets: {public_subnets}")
     logger.info(f"Private Subnets: {private_subnets}")
 
-    if len(public_subnets) < len(azs) or len(private_subnets) < len(azs):
-        raise Exception('Number of public or private subnets does not match the number of availability zones')
+    # if len(public_subnets) < len(azs) or len(private_subnets) < len(azs):
+    #     raise Exception('Number of public or private subnets does not match the number of availability zones')
 
     # Ensure that there are enough subnets for each availability zone
     az_to_public_subnet = {az: [] for az in azs}
