@@ -68,10 +68,11 @@ public class EksConfigConfigurator {
         IBucket bucket = Bucket.fromBucketName(scope, "auto-study-kubectl-layer", "auto-study-my-layer-suchan-0912");
         return new LayerVersion(scope, "KubectlLayer", LayerVersionProps.builder()
                 .code(Code.fromBucket(bucket, "kubectl-layer.zip"))
-                .compatibleRuntimes(List.of(Runtime.PYTHON_3_11, new Runtime("python3.12", RuntimeFamily.PYTHON)))
+                .compatibleRuntimes(List.of(Runtime.PYTHON_3_11, new Runtime("python3.12", RuntimeFamily.PYTHON), Runtime.PYTHON_3_7))
                 .description("Custom layer with Python 3.11 for kubectl")
                 .build());
     }
+
 
     private Role createMasterRole() {
         return Role.Builder.create(scope, "MasterRole")
