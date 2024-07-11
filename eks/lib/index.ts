@@ -48,6 +48,11 @@ export class EksConfigStack extends cdk.Stack {
         const publicSubnetIds = vpcInfoResource.getAtt('PublicSubnetIds').toString().split(',');
         const privateSubnetIds = vpcInfoResource.getAtt('PrivateSubnetIds').toString().split(',');
 
+        const availabilityZones = ['us-east-2a', 'us-east-2b'];
+        if (publicSubnetIds.length < availabilityZones.length || privateSubnetIds.length < availabilityZones.length) {
+            throw new Error('Number of public or private subnets does not match the number of availability zones');
+        }
+
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
             vpcId: vpcId,
             availabilityZones: ['us-east-2a', 'us-east-2b'],
