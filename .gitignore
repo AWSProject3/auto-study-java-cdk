@@ -16,4 +16,13 @@ Desktop.ini
 *.war
 *.jar
 
-eks/node_modules/
+# Node.js
+node_modules/
+
+# TypeScript
+*.js
+*.js.map
+*.d.ts
+
+# CDK
+cdk.out/
