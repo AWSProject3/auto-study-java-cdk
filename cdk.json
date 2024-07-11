@@ -1,5 +1,5 @@
 {
-  "app": "sh -c './gradlew run -PmainClass=AutoCodeApplication && npx ts-node --prefer-ts-exts eks/index.ts'",
+  "app": "sh -c './gradlew run -PmainClass=AutoCodeApplication && npx ts-node --prefer-ts-exts eks/lib/index.ts'",
   "watch": {
     "include": [
       "**"
