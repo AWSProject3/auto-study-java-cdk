@@ -8,14 +8,14 @@ export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const vpcId = cdk.Fn.importValue('auto-study-vpc-id');
+        const vpcName = cdk.Fn.importValue('auto-study-vpc-name');
         const publicSubnetId1 = cdk.Fn.importValue('publicSubnetId us-east-2a');
         const publicSubnetId2 = cdk.Fn.importValue('publicSubnetId us-east-2b');
         const privateSubnetId1 = cdk.Fn.importValue('privateSubnetId us-east-2a');
         const privateSubnetId2 = cdk.Fn.importValue('privateSubnetId us-east-2b');
 
         const vpc = ec2.Vpc.fromLookup(this, 'ExistingVpc', {
-            vpcId: vpcId,
+            vpcName: vpcName
         });
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
