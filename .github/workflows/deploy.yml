@@ -66,5 +66,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-2
-        working-directory: ./eks
-        run: cdk deploy --require-approval never --all
+        run: |
+          cd eks
+          cdk deploy --require-approval never --all -a "npx ts-node lib/eks-config-stack.ts"
