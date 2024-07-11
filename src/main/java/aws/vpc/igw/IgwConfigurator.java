@@ -6,7 +6,7 @@ import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
 public class IgwConfigurator {
-    private final String ATTACHMENT_SUFFIX = "attachment";
+    private static final String ATTACHMENT_SUFFIX = "attachment";
 
     private final Construct scope;
     private final Vpc vpc;
