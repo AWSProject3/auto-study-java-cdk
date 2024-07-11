@@ -14,11 +14,8 @@ export class EksConfigStack extends cdk.Stack {
         const privateSubnetId1 = cdk.Fn.importValue('privateSubnetId us-east-2a');
         const privateSubnetId2 = cdk.Fn.importValue('privateSubnetId us-east-2b');
 
-        const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
+        const vpc = ec2.Vpc.fromLookup(this, 'ExistingVpc', {
             vpcId: vpcId,
-            availabilityZones: ['us-east-2a', 'us-east-2b'],
-            publicSubnetIds: [publicSubnetId1, publicSubnetId2],
-            privateSubnetIds: [privateSubnetId1, privateSubnetId2],
         });
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
@@ -37,7 +34,7 @@ export class EksConfigStack extends cdk.Stack {
                     nodeGroupSubnets: privateSubnets,
                 },
             ],
-            vpcSubnets: [privateSubnets],
+            vpcSubnets: [privateSubnets]
         });
 
         const blueprint = blueprints.EksBlueprint.builder()
