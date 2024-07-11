@@ -22,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: '18'  # Changed to 18 for better compatibility
 
       - name: Install AWS CLI
         run: |
@@ -40,7 +40,7 @@ jobs:
         run: ./gradlew clean build
 
       - name: Install TypeScript dependencies
-        working-directory: eks
+        working-directory: ./eks
         run: |
           npm ci
           npm run build
