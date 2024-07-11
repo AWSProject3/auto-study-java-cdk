@@ -1,5 +1,5 @@
 {
-  "app": "sh -c 'mvn -e -q compile exec:java -Dexec.mainClass=AutoCodeApplication && npx ts-node --prefer-ts-exts eks/index.ts'",
+  "app": "sh -c './gradlew run -PmainClass=AutoCodeApplication && npx ts-node --prefer-ts-exts eks/index.ts'",
   "watch": {
     "include": [
       "**"
@@ -7,8 +7,9 @@
     "exclude": [
       "README.md",
       "cdk*.json",
-      "target",
-      "pom.xml",
+      "build",
+      "gradle",
+      ".gradle",
       "src/test"
     ]
   },
