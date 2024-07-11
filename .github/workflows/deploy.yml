@@ -13,12 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Debug - List directory contents
-        run: |
-          pwd
-          ls -la
-          ls -la eks
-
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -75,4 +69,4 @@ jobs:
         working-directory: eks
         run: |
           npm run build
-          cdk deploy --require-approval never --all -a "npx ts-node lib/eks-config-stack.ts"
+          cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"

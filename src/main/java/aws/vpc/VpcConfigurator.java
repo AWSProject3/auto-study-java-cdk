@@ -17,15 +17,14 @@ public class VpcConfigurator {
 
     public Vpc configureEmptyVpc(String vpcId) {
         Vpc vpc = Builder.create(scope, vpcId)
-                .vpcName("auto-study-vpc")
                 .ipAddresses(IpAddresses.cidr("20.0.0.0/16"))
                 .maxAzs(2)
                 .subnetConfiguration(Collections.emptyList())
                 .build();
 
-        new CfnOutput(scope, "VpcName", CfnOutputProps.builder()
-                .value("auto-study-vpc")
-                .exportName("auto-study-vpc-name")
+        new CfnOutput(scope, "VpcId", CfnOutputProps.builder()
+                .value(vpc.getVpcId())
+                .exportName("auto-study-vpc-id")
                 .build());
 
         return vpc;

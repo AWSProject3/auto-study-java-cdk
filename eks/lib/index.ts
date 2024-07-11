@@ -2,20 +2,57 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import {Construct} from 'constructs';
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const vpcName = cdk.Fn.importValue('auto-study-vpc-name');
-        const publicSubnetId1 = cdk.Fn.importValue('publicSubnetId us-east-2a');
-        const publicSubnetId2 = cdk.Fn.importValue('publicSubnetId us-east-2b');
-        const privateSubnetId1 = cdk.Fn.importValue('privateSubnetId us-east-2a');
-        const privateSubnetId2 = cdk.Fn.importValue('privateSubnetId us-east-2b');
+        const vpcName = 'auto-study-vpc';
 
-        const vpc = ec2.Vpc.fromLookup(this, 'ExistingVpc', {
-            vpcName: vpcName
+        const lambdaLayer = new lambda.LayerVersion(this, 'VpcInfoLayer', {
+            code: lambda.Code.fromAsset('lambda', {
+                bundling: {
+                    image: lambda.Runtime.PYTHON_3_12.bundlingImage,
+                    command: [
+                        'bash', '-c',
+                        'pip install -r requirements.txt -t /asset-output && cp -au . /asset-output'
+                    ],
+                },
+            }),
+            compatibleRuntimes: [lambda.Runtime.PYTHON_3_12],
+            description: 'A layer to add boto3',
+        });
+
+        const getVpcInfoFunction = new lambda.Function(this, 'GetVpcInfoFunction', {
+            runtime: lambda.Runtime.PYTHON_3_8,
+            handler: 'getVpcInfo.handler',
+            code: lambda.Code.fromAsset('lambda'),
+            layers: [lambdaLayer],
+        });
+
+        const vpcInfoProvider = new cr.Provider(this, 'VpcInfoProvider', {
+            onEventHandler: getVpcInfoFunction,
+        });
+
+        const vpcInfoResource = new cdk.CustomResource(this, 'VpcInfoResource', {
+            serviceToken: vpcInfoProvider.serviceToken,
+            properties: {
+                VpcName: vpcName,
+            },
+        });
+
+        const vpcId = vpcInfoResource.getAttString('VpcId');
+        const publicSubnetIds = vpcInfoResource.getAtt('PublicSubnetIds').toString().split(',');
+        const privateSubnetIds = vpcInfoResource.getAtt('PrivateSubnetIds').toString().split(',');
+
+        const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
+            vpcId: vpcId,
+            availabilityZones: ['us-east-2a', 'us-east-2b'],
+            publicSubnetIds: publicSubnetIds,
+            privateSubnetIds: privateSubnetIds,
         });
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
