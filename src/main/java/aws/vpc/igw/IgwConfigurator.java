@@ -5,13 +5,13 @@ import software.amazon.awscdk.services.ec2.CfnVPCGatewayAttachment;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
-public class IgwConfig {
+public class IgwConfigurator {
     private final String ATTACHMENT_SUFFIX = "attachment";
 
     private final Construct scope;
     private final Vpc vpc;
 
-    public IgwConfig(Construct scope, Vpc vpc) {
+    public IgwConfigurator(Construct scope, Vpc vpc) {
         this.scope = scope;
         this.vpc = vpc;
     }

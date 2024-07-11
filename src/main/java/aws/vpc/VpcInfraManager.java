@@ -1,6 +1,6 @@
-package aws.vpc.common;
+package aws.vpc;
 
-import aws.vpc.subnet.dto.BasicInfraDto;
+import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.subnet.dto.SubnetDto;
 import aws.vpc.type.AzType;
 import java.util.Arrays;

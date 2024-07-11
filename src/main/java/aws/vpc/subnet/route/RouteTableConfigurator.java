@@ -5,12 +5,12 @@ import java.util.List;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
-public class RouteTableConfig {
+public class RouteTableConfigurator {
     private final List<SubnetDto> subnetDtos;
     private final String igwId;
     private final RouteTableFactory routeTableFactory;
 
-    public RouteTableConfig(Construct scope, Vpc vpc, List<SubnetDto> subnetDtos, String igwId) {
+    public RouteTableConfigurator(Construct scope, Vpc vpc, List<SubnetDto> subnetDtos, String igwId) {
         this.subnetDtos = subnetDtos;
         this.igwId = igwId;
         this.routeTableFactory = new RouteTableFactory(scope, vpc, subnetDtos);

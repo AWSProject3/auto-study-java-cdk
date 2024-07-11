@@ -5,10 +5,10 @@ import software.amazon.awscdk.services.ec2.IpAddresses;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
-public class VpcConfig {
+public class VpcConfigurator {
     private final Construct scope;
 
-    public VpcConfig(Construct scope) {
+    public VpcConfigurator(Construct scope) {
         this.scope = scope;
     }
 

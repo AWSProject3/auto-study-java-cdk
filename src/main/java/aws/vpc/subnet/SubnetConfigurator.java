@@ -9,11 +9,11 @@ import java.util.List;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
-public class SubnetConfig {
+public class SubnetConfigurator {
     private final Construct scope;
     private final Vpc vpc;
 
-    public SubnetConfig(Construct scope, Vpc vpc) {
+    public SubnetConfigurator(Construct scope, Vpc vpc) {
         this.scope = scope;
         this.vpc = vpc;
     }

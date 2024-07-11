@@ -1,5 +1,5 @@
 import aws.vpc.BasicInfraAdminister;
-import aws.vpc.common.VpcInfraManager;
+import aws.vpc.VpcInfraManager;
 import aws.vpc.eks.EksAdminister;
 import aws.vpc.rds.RdsAdminister;
 import software.amazon.awscdk.App;

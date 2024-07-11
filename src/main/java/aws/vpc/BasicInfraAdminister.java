@@ -1,11 +1,10 @@
 package aws.vpc;
 
-import aws.vpc.common.VpcInfraManager;
-import aws.vpc.igw.IgwConfig;
-import aws.vpc.subnet.SubnetConfig;
-import aws.vpc.subnet.dto.BasicInfraDto;
+import aws.vpc.igw.IgwConfigurator;
+import aws.vpc.subnet.SubnetConfigurator;
+import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.subnet.route.RouteTableConfig;
+import aws.vpc.subnet.route.RouteTableConfigurator;
 import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
@@ -19,17 +18,17 @@ public class BasicInfraAdminister {
         Environment env = createEnv(account, region);
         Stack scope = new Stack(app, "VpcStack", StackProps.builder().env(env).build());
 
-        VpcConfig vpcConfig = new VpcConfig(scope);
-        Vpc vpc = vpcConfig.configureEmptyVpc("auto-study-vpc");
+        VpcConfigurator vpcConfigurator = new VpcConfigurator(scope);
+        Vpc vpc = vpcConfigurator.configureEmptyVpc("auto-study-vpc");
 
-        SubnetConfig subnetConfig = new SubnetConfig(scope, vpc);
-        List<SubnetDto> subnetDtos = subnetConfig.configure();
+        SubnetConfigurator subnetConfigurator = new SubnetConfigurator(scope, vpc);
+        List<SubnetDto> subnetDtos = subnetConfigurator.configure();
 
-        IgwConfig igwConfig = new IgwConfig(scope, vpc);
-        String igwId = igwConfig.configure("igw");
+        IgwConfigurator igwConfigurator = new IgwConfigurator(scope, vpc);
+        String igwId = igwConfigurator.configure("igw");
 
-        RouteTableConfig routeTableConfig = new RouteTableConfig(scope, vpc, subnetDtos, igwId);
-        routeTableConfig.configure();
+        RouteTableConfigurator routeTableConfigurator = new RouteTableConfigurator(scope, vpc, subnetDtos, igwId);
+        routeTableConfigurator.configure();
 
         return new VpcInfraManager(new BasicInfraDto(subnetDtos, vpc.getVpcId()));
     }

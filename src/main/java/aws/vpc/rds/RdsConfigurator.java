@@ -3,7 +3,7 @@ package aws.vpc.rds;
 import static software.amazon.awscdk.Duration.days;
 import static software.amazon.awscdk.SecretValue.unsafePlainText;
 
-import aws.vpc.common.VpcInfraManager;
+import aws.vpc.VpcInfraManager;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
@@ -17,11 +17,11 @@ import software.amazon.awscdk.services.rds.MysqlEngineVersion;
 import software.amazon.awscdk.services.rds.SubnetGroup;
 import software.constructs.Construct;
 
-public class RdsConfig {
+public class RdsConfigurator {
     private final Construct scope;
     private final VpcInfraManager vpcInfraManager;
 
-    public RdsConfig(Construct scope, VpcInfraManager vpcInfraManager) {
+    public RdsConfigurator(Construct scope, VpcInfraManager vpcInfraManager) {
         this.scope = scope;
         this.vpcInfraManager = vpcInfraManager;
     }

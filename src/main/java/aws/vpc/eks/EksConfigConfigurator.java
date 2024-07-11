@@ -1,10 +1,11 @@
 package aws.vpc.eks;
 
-import aws.vpc.common.VpcInfraManager;
+import aws.vpc.VpcInfraManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import software.amazon.awscdk.cdk.lambdalayer.kubectl.v30.KubectlV30Layer;
 import software.amazon.awscdk.lambdalayer.kubectl.KubectlLayer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
@@ -14,6 +15,7 @@ import software.amazon.awscdk.services.eks.CfnAddon;
 import software.amazon.awscdk.services.eks.CfnAddonProps;
 import software.amazon.awscdk.services.eks.Cluster;
 import software.amazon.awscdk.services.eks.ClusterProps;
+import software.amazon.awscdk.services.eks.EndpointAccess;
 import software.amazon.awscdk.services.eks.KubernetesVersion;
 import software.amazon.awscdk.services.eks.NodegroupAmiType;
 import software.amazon.awscdk.services.eks.NodegroupOptions;
@@ -21,11 +23,11 @@ import software.amazon.awscdk.services.iam.AccountRootPrincipal;
 import software.amazon.awscdk.services.iam.Role;
 import software.constructs.Construct;
 
-public class EksConfig {
+public class EksConfigConfigurator {
     private final Construct scope;
     private final VpcInfraManager vpcInfraManager;
 
-    public EksConfig(Construct scope, VpcInfraManager vpcInfraManager) {
+    public EksConfigConfigurator(Construct scope, VpcInfraManager vpcInfraManager) {
         this.scope = scope;
         this.vpcInfraManager = vpcInfraManager;
     }
@@ -40,16 +42,31 @@ public class EksConfig {
 
     private Cluster createCluster(String clusterName, IVpc vpc) {
         Role masterRole = createMasterRole();
-
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
-                .version(KubernetesVersion.of("1.28"))
+                .version(KubernetesVersion.of("1.30"))
+                .kubectlLayer(new KubectlV30Layer(scope, "kubectl"))
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
                 .vpcSubnets(Collections.singletonList(vpcInfraManager.createPrivateSubnetSelector(scope)))
                 .defaultCapacity(0)
                 .kubectlLayer(new KubectlLayer(scope, "KubectlLayer"))
+                .endpointAccess(EndpointAccess.PUBLIC_AND_PRIVATE)
+                .kubectlLambdaRole(createKubectlRole())
+                .placeClusterHandlerInVpc(true)
                 .build());
+    }
+
+    private Role createMasterRole() {
+        return Role.Builder.create(scope, "MasterRole")
+                .assumedBy(new AccountRootPrincipal())
+                .build();
+    }
+
+    private Role createKubectlRole() {
+        return Role.Builder.create(scope, "EksKubectlRole")
+                .assumedBy(new AccountRootPrincipal())
+                .build();
     }
 
     private void tagSubnetsForEks(String clusterName) {
@@ -68,12 +85,6 @@ public class EksConfig {
         privateTags.put("kubernetes.io/role/internal-elb", "1");
         privateTags.put("kubernetes.io/cluster/" + clusterName, "shared");
         vpcInfraManager.tagPrivateSubnets(privateTags, scope);
-    }
-
-    private Role createMasterRole() {
-        return Role.Builder.create(scope, "MasterRole")
-                .assumedBy(new AccountRootPrincipal())
-                .build();
     }
 
     private void configureNodeGroup(Cluster cluster) {

@@ -6,10 +6,10 @@ import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecr.TagStatus;
 import software.constructs.Construct;
 
-public class EcrConfig {
+public class EcrRepositoryConfigurator {
     private final Construct scope;
 
-    public EcrConfig(Construct scope) {
+    public EcrRepositoryConfigurator(Construct scope) {
         this.scope = scope;
     }
 

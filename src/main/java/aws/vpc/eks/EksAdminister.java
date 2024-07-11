@@ -1,7 +1,7 @@
 package aws.vpc.eks;
 
-import aws.vpc.common.VpcInfraManager;
-import aws.vpc.eks.ecr.EcrConfig;
+import aws.vpc.VpcInfraManager;
+import aws.vpc.eks.ecr.EcrRepositoryConfigurator;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.Stack;
@@ -12,11 +12,11 @@ public class EksAdminister {
     public void createInfra(App app, String account, String region, VpcInfraManager vpcInfraManager) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        EksConfig eksConfig = new EksConfig(stack, vpcInfraManager);
-        eksConfig.configure("auto-study-eks");
+        EksConfigConfigurator eksConfigConfigurator = new EksConfigConfigurator(stack, vpcInfraManager);
+        eksConfigConfigurator.configure("auto-study-eks");
 
-        EcrConfig ecrConfig = new EcrConfig(stack);
-        ecrConfig.configure("auto-study-app", 10);
+        EcrRepositoryConfigurator ecrRepositoryConfigurator = new EcrRepositoryConfigurator(stack);
+        ecrRepositoryConfigurator.configure("auto-study-app", 10);
     }
 
     private Stack createStack(App app, Environment env) {

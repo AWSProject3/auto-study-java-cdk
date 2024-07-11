@@ -10,14 +10,14 @@ import software.amazon.awscdk.services.ec2.CfnEIP.Builder;
 import software.amazon.awscdk.services.ec2.CfnNatGateway;
 import software.constructs.Construct;
 
-public class NatGatewayConfig {
+public class NatGatewayConfigurator {
 
     private static final String EIP = "EIP1";
     private static final String ID_PREFIX = "NateGateWay";
 
     private final Construct scope;
 
-    public NatGatewayConfig(Construct scope) {
+    public NatGatewayConfigurator(Construct scope) {
         this.scope = scope;
     }
 

@@ -4,7 +4,7 @@ import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
 
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.subnet.ngw.NatGatewayConfig;
+import aws.vpc.subnet.ngw.NatGatewayConfigurator;
 import aws.vpc.type.AzType;
 import java.util.List;
 import java.util.Optional;
@@ -69,7 +69,7 @@ public class RouteTableFactory {
     }
 
     private NatGatewayDto createNatGateway(SubnetDto subnetDto) {
-        NatGatewayConfig natGatewayConfig = new NatGatewayConfig(scope);
-        return natGatewayConfig.configure(subnetDto);
+        NatGatewayConfigurator natGatewayConfigurator = new NatGatewayConfigurator(scope);
+        return natGatewayConfigurator.configure(subnetDto);
     }
 }
