@@ -15,3 +15,5 @@ Desktop.ini
 *.log
 *.war
 *.jar
+
+eks/node_modules/
