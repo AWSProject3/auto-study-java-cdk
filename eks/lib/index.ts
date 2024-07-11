@@ -27,7 +27,7 @@ export class EksConfigStack extends cdk.Stack {
         });
 
         const getVpcInfoFunction = new lambda.Function(this, 'GetVpcInfoFunction', {
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: lambda.Runtime.PYTHON_3_12,
             handler: 'getVpcInfo.handler',
             code: lambda.Code.fromAsset('lambda'),
             layers: [lambdaLayer],
