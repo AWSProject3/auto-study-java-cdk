@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import software.amazon.awscdk.cdk.lambdalayer.kubectl.v30.KubectlV30Layer;
-import software.amazon.awscdk.lambdalayer.kubectl.KubectlLayer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.eks.AutoScalingGroupCapacityOptions;
 import software.amazon.awscdk.services.eks.CapacityType;
 import software.amazon.awscdk.services.eks.CfnAddon;
@@ -21,6 +20,13 @@ import software.amazon.awscdk.services.eks.NodegroupAmiType;
 import software.amazon.awscdk.services.eks.NodegroupOptions;
 import software.amazon.awscdk.services.iam.AccountRootPrincipal;
 import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.lambda.Code;
+import software.amazon.awscdk.services.lambda.LayerVersion;
+import software.amazon.awscdk.services.lambda.LayerVersionProps;
+import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.RuntimeFamily;
+import software.amazon.awscdk.services.s3.Bucket;
+import software.amazon.awscdk.services.s3.IBucket;
 import software.constructs.Construct;
 
 public class EksConfigConfigurator {
@@ -34,26 +40,36 @@ public class EksConfigConfigurator {
 
     public void configure(String clusterName) {
         IVpc vpc = vpcInfraManager.findExistingVpc(scope);
-        Cluster cluster = createCluster(clusterName, vpc);
+        SubnetSelection subnetSelector = vpcInfraManager.createPrivateSubnetSelector(scope);
+        Cluster cluster = createCluster(clusterName, vpc, subnetSelector);
         tagSubnetsForEks(clusterName);
         configureNodeGroup(cluster);
         configureAddons(cluster);
     }
 
-    private Cluster createCluster(String clusterName, IVpc vpc) {
+    private Cluster createCluster(String clusterName, IVpc vpc, SubnetSelection subnetSelector) {
         Role masterRole = createMasterRole();
+
         return new Cluster(scope, "EksCluster", ClusterProps.builder()
                 .version(KubernetesVersion.of("1.30"))
-                .kubectlLayer(new KubectlV30Layer(scope, "kubectl"))
+                .kubectlLayer(createKubectlLayerFromS3())
                 .clusterName(clusterName)
                 .mastersRole(masterRole)
                 .vpc(vpc)
-                .vpcSubnets(Collections.singletonList(vpcInfraManager.createPrivateSubnetSelector(scope)))
+                .vpcSubnets(Collections.singletonList(subnetSelector))
                 .defaultCapacity(0)
-                .kubectlLayer(new KubectlLayer(scope, "KubectlLayer"))
                 .endpointAccess(EndpointAccess.PUBLIC_AND_PRIVATE)
                 .kubectlLambdaRole(createKubectlRole())
                 .placeClusterHandlerInVpc(true)
+                .build());
+    }
+
+    private LayerVersion createKubectlLayerFromS3() {
+        IBucket bucket = Bucket.fromBucketName(scope, "auto-study-kubectl-layer", "auto-study-my-layer-suchan-0912");
+        return new LayerVersion(scope, "KubectlLayer", LayerVersionProps.builder()
+                .code(Code.fromBucket(bucket, "kubectl-layer.zip"))
+                .compatibleRuntimes(List.of(Runtime.PYTHON_3_11, new Runtime("python3.12", RuntimeFamily.PYTHON)))
+                .description("Custom layer with Python 3.11 for kubectl")
                 .build());
     }
 
