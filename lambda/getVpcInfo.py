@@ -29,6 +29,21 @@ def handler(event, context):
     if len(public_subnets) < len(azs) or len(private_subnets) < len(azs):
         raise Exception('Number of public or private subnets does not match the number of availability zones')
 
+    # Ensure that there are enough subnets for each availability zone
+    az_to_public_subnet = {az: [] for az in azs}
+    az_to_private_subnet = {az: [] for az in azs}
+
+    for subnet in subnets:
+        az = subnet['AvailabilityZone']
+        if subnet['MapPublicIpOnLaunch']:
+            az_to_public_subnet[az].append(subnet['SubnetId'])
+        else:
+            az_to_private_subnet[az].append(subnet['SubnetId'])
+
+    # Flatten the lists
+    public_subnets = [subnet for subnets in az_to_public_subnet.values() for subnet in subnets]
+    private_subnets = [subnet for subnets in az_to_private_subnet.values() for subnet in subnets]
+
     return {
         'VpcId': vpc_id,
         'PublicSubnetIds': public_subnets,
