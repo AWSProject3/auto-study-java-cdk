@@ -26,6 +26,11 @@ def handler(event, context):
 
     azs = {subnet['AvailabilityZone'] for subnet in subnets}
 
+    # Debug print statements
+    print(f"Available AZs: {azs}")
+    print(f"Public Subnets: {public_subnets}")
+    print(f"Private Subnets: {private_subnets}")
+
     if len(public_subnets) < len(azs) or len(private_subnets) < len(azs):
         raise Exception('Number of public or private subnets does not match the number of availability zones')
 
