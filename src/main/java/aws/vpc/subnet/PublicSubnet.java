@@ -3,6 +3,8 @@ package aws.vpc.subnet;
 import aws.vpc.subnet.dto.SubnetDto;
 import aws.vpc.type.AzType;
 import aws.vpc.type.SubnetType;
+import software.amazon.awscdk.CfnOutput;
+import software.amazon.awscdk.CfnOutputProps;
 import software.amazon.awscdk.services.ec2.CfnSubnet;
 import software.amazon.awscdk.services.ec2.CfnSubnet.Builder;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -24,11 +26,18 @@ public class PublicSubnet {
     }
 
     private CfnSubnet createPublicSubnet(String subnetId, String cidr, AzType az) {
-        return Builder.create(scope, subnetId)
+        CfnSubnet subnet = Builder.create(scope, subnetId)
                 .vpcId(vpc.getVpcId())
                 .cidrBlock(cidr)
                 .availabilityZone(az.getValue())
                 .mapPublicIpOnLaunch(true)
                 .build();
+
+        new CfnOutput(scope, "PublicSubnetId " + az, CfnOutputProps.builder()
+                .value(subnet.getAttrSubnetId())
+                .exportName("publicSubnetId " + az.getValue())
+                .build());
+
+        return subnet;
     }
 }

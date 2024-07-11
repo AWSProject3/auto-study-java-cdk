@@ -22,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '22'
+          node-version: '18'  # Changed to 18 for better compatibility
 
       - name: Install AWS CLI
         run: |
@@ -36,8 +36,14 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
-      - name: Install dependencies
+      - name: Install Java dependencies
         run: ./gradlew clean build
+
+      - name: Install TypeScript dependencies
+        working-directory: ./eks
+        run: |
+          npm ci
+          npm run build
 
       - name: Bootstrap CDK
         env:
@@ -48,9 +54,17 @@ jobs:
           export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION}
 
-      - name: Deploy CDK Stack
+      - name: Deploy Java CDK Stack
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
+          AWS_REGION: us-east-2
         run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
+
+      - name: Deploy TypeScript EKS Stack
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-2
+        working-directory: ./eks
+        run: cdk deploy --require-approval never --all

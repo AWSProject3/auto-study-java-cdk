@@ -77,4 +77,8 @@ public class VpcInfraManager {
             cfnSubnet.setTagsRaw(cfnTags);
         }
     }
+
+    public BasicInfraDto getInfraDto() {
+        return infraDto;
+    }
 }

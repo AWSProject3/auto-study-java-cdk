@@ -1,8 +1,11 @@
 package aws.vpc;
 
 import java.util.Collections;
+import software.amazon.awscdk.CfnOutput;
+import software.amazon.awscdk.CfnOutputProps;
 import software.amazon.awscdk.services.ec2.IpAddresses;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.amazon.awscdk.services.ec2.Vpc.Builder;
 import software.constructs.Construct;
 
 public class VpcConfigurator {
@@ -13,10 +16,17 @@ public class VpcConfigurator {
     }
 
     public Vpc configureEmptyVpc(String vpcId) {
-        return Vpc.Builder.create(scope, vpcId)
+        Vpc vpc = Builder.create(scope, vpcId)
                 .ipAddresses(IpAddresses.cidr("20.0.0.0/16"))
                 .maxAzs(2)
                 .subnetConfiguration(Collections.emptyList())
                 .build();
+
+        new CfnOutput(scope, "VpcId", CfnOutputProps.builder()
+                .value(vpc.getVpcId())
+                .exportName("auto-study-vpc-id")
+                .build());
+
+        return vpc;
     }
 }
