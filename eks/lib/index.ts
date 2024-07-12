@@ -51,15 +51,24 @@ export class EksConfigStack extends cdk.Stack {
             },
         });
 
-        const vpcId = vpcInfoResource.getAttString('VpcId');
-        const publicSubnetIds = vpcInfoResource.getAttString('PublicSubnetIds').split(',');
-        const privateSubnetIds = vpcInfoResource.getAttString('PrivateSubnetIds').split(',');
-        const availabilityZones = vpcInfoResource.getAttString('AvailabilityZones').split(',');
+        const vpcId = cdk.Token.asString(vpcInfoResource.getAttString('VpcId'));
+        const publicSubnetIds = cdk.Token.asString(vpcInfoResource.getAttString('PublicSubnetIds')).split(',');
+        const privateSubnetIds = cdk.Token.asString(vpcInfoResource.getAttString('PrivateSubnetIds')).split(',');
+        const availabilityZones = cdk.Token.asString(vpcInfoResource.getAttString('AvailabilityZones')).split(',');
 
         console.log(`VPC ID: ${vpcId}`);
         console.log(`Public Subnets: ${publicSubnetIds}`);
         console.log(`Private Subnets: ${privateSubnetIds}`);
         console.log(`Availability Zones: ${availabilityZones}`);
+
+        new cdk.CfnOutput(this, 'VpcInfo', {
+            value: JSON.stringify({
+                vpcId,
+                publicSubnetIds,
+                privateSubnetIds,
+                availabilityZones
+            })
+        });
 
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
             vpcId: vpcId,
