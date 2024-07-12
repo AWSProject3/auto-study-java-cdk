@@ -4,13 +4,19 @@ import static software.amazon.awscdk.Duration.days;
 import static software.amazon.awscdk.SecretValue.unsafePlainText;
 
 import aws.vpc.VpcInfraManager;
+import java.util.Collections;
+import software.amazon.awscdk.services.ec2.IPeer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ec2.Port;
+import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
+import software.amazon.awscdk.services.ec2.Vpc;
+import software.amazon.awscdk.services.ec2.VpcLookupOptions;
 import software.amazon.awscdk.services.rds.Credentials;
-import software.amazon.awscdk.services.rds.DatabaseInstance.Builder;
+import software.amazon.awscdk.services.rds.DatabaseInstance;
 import software.amazon.awscdk.services.rds.DatabaseInstanceEngine;
 import software.amazon.awscdk.services.rds.MySqlInstanceEngineProps;
 import software.amazon.awscdk.services.rds.MysqlEngineVersion;
@@ -34,7 +40,8 @@ public class RdsConfigurator {
     private void createRds(String rdsId, String dbName, String userName, String userPassword, IVpc vpc) {
         SubnetSelection selector = createSubnetSelector();
         SubnetGroup subnetGroup = createDbSubnetGroup(rdsId, vpc, selector);
-        createDbInstance(rdsId, dbName, userName, userPassword, vpc, subnetGroup, selector);
+        SecurityGroup rdsSecurityGroup = createRdsSecurityGroup(rdsId, vpc);
+        createDbInstance(rdsId, dbName, userName, userPassword, vpc, subnetGroup, selector, rdsSecurityGroup);
     }
 
     private SubnetSelection createSubnetSelector() {
@@ -49,9 +56,39 @@ public class RdsConfigurator {
                 .build();
     }
 
+    private SecurityGroup createRdsSecurityGroup(String rdsId, IVpc vpc) {
+        SecurityGroup rdsSecurityGroup = SecurityGroup.Builder.create(scope, rdsId + "-SecurityGroup")
+                .vpc(vpc)
+                .allowAllOutbound(true)
+                .description("Security group for RDS instance " + rdsId)
+                .build();
+
+        rdsSecurityGroup.addIngressRule(
+                createEksSecurityGroup(),
+                Port.tcp(3306),
+                "Allow MySQL access from EKS pods"
+        );
+
+        return rdsSecurityGroup;
+    }
+
+    private IPeer createEksSecurityGroup() {
+        return SecurityGroup.Builder.create(scope, "EksSecurityGroup")
+                .vpc(getVpc())
+                .allowAllOutbound(true)
+                .description("Security group for EKS cluster")
+                .build();
+    }
+
+    private IVpc getVpc() {
+        return Vpc.fromLookup(scope, "ExistingVPC", VpcLookupOptions.builder()
+                .tags(Collections.singletonMap("Name", "auto-study"))
+                .build());
+    }
+
     private void createDbInstance(String rdsId, String dbName, String userName, String userPassword, IVpc vpc,
-                                  SubnetGroup subnetGroup, SubnetSelection selector) {
-        Builder.create(scope, rdsId)
+                                  SubnetGroup subnetGroup, SubnetSelection selector, SecurityGroup securityGroup) {
+        DatabaseInstance.Builder.create(scope, rdsId)
                 .instanceIdentifier(rdsId)
                 .engine(DatabaseInstanceEngine.mysql(MySqlInstanceEngineProps
                         .builder()
@@ -62,6 +99,7 @@ public class RdsConfigurator {
                 .vpc(vpc)
                 .vpcSubnets(selector)
                 .subnetGroup(subnetGroup)
+                .securityGroups(java.util.Collections.singletonList(securityGroup))
                 .allocatedStorage(20)
                 .databaseName(dbName)
                 .deletionProtection(true)
