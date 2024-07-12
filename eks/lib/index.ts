@@ -74,11 +74,11 @@ export class EksConfigStack extends cdk.Stack {
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        const masterRole = this.createMasterRole();
-
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: cdk.aws_eks.KubernetesVersion.V1_27,
-            mastersRole: masterRole,
+            mastersRole: blueprints.getResource(context => {
+                return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
+            }),
             managedNodeGroups: [
                 {
                     id: "OnDemandNodes",
@@ -108,12 +108,6 @@ export class EksConfigStack extends cdk.Stack {
             .build(this, 'auto-study-eks');
 
         this.tagSubnets(vpc, 'auto-study-eks');
-    }
-
-    private createMasterRole(): iam.Role {
-        return new iam.Role(this, 'MasterRole', {
-            assumedBy: new iam.AccountRootPrincipal(),
-        });
     }
 
     private tagSubnets(vpc: ec2.IVpc, clusterName: string) {
