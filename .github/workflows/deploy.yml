@@ -54,23 +54,26 @@ jobs:
           export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION}
 
-      - name: Deploy Java CDK Stack
+      - name: Deploy Java CDK Stack and Generate VPC Info
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-2
-        run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
+        run: |
+          cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
+          java -jar build/libs/app-1.0-SNAPSHOT.jar > vpc-info.json
 
-      #      - name: List lambda directory contents
-      #        run: ls -R lambda
+      - name: Debug VPC Info
+        run: |
+          echo "VPC Info:"
+          cat vpc-info.json
 
       - name: Deploy TypeScript EKS Stack
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-2
-          VPC_INFO: ${{ env.VPC_INFO }}
         working-directory: eks
         run: |
           npm run build
-          cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"
+          cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts" --context $(cat ../vpc-info.json)

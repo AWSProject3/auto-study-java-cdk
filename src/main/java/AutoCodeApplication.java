@@ -4,13 +4,8 @@ import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.s3.S3Administer;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.type.AzType;
 import aws.vpc.type.SubnetType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
@@ -24,8 +19,13 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
-        String vpcInfo = convertVpcInfoToJson(vpcInfraManager);
-        System.setProperty("VPC_INFO", vpcInfo);
+//        String vpcInfo = convertVpcInfoToJson(vpcInfraManager);
+//        System.setProperty("VPC_INFO", vpcInfo);
+
+        BasicInfraDto infraDto = vpcInfraManager.infraDto();
+        app.getNode().setContext("vpcId", infraDto.vpcId());
+        app.getNode().setContext("publicSubnetIds", findPublicSubnetIds(infraDto));
+        app.getNode().setContext("privateSubnetIds", findPrivateSubnetIds(infraDto));
 
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
@@ -33,29 +33,26 @@ public class AutoCodeApplication {
         S3Administer s3Administer = new S3Administer();
         s3Administer.createInfra(app, ACCOUNT_ID, REGION);
 
-//        EksAdminister eksAdminister = new EksAdminister();
-//        eksAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
-
         System.out.println("complete");
 
         app.synth();
     }
 
-    private static String convertVpcInfoToJson(VpcInfraManager vpcInfraManager) {
-        BasicInfraDto infraDto = vpcInfraManager.getInfraDto();
-        Map<String, Object> vpcInfo = new HashMap<>();
-        vpcInfo.put("vpcId", infraDto.vpcId());
-        vpcInfo.put("publicSubnetIds", findPublicSubnetIds(infraDto));
-        vpcInfo.put("privateSubnetIds", findPrivateSubnetIds(infraDto));
-        vpcInfo.put("availabilityZones", List.of(AzType.AZ_1A, AzType.AZ_1B));
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(vpcInfo);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting VPC info to JSON", e);
-        }
-    }
+//    private static String convertVpcInfoToJson(VpcInfraManager vpcInfraManager) {
+//        BasicInfraDto infraDto = vpcInfraManager.infraDto();
+//        Map<String, Object> vpcInfo = new HashMap<>();
+//        vpcInfo.put("vpcId", infraDto.vpcId());
+//        vpcInfo.put("publicSubnetIds", findPublicSubnetIds(infraDto));
+//        vpcInfo.put("privateSubnetIds", findPrivateSubnetIds(infraDto));
+//        vpcInfo.put("availabilityZones", List.of(AzType.AZ_1A, AzType.AZ_1B));
+//
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            return objectMapper.writeValueAsString(vpcInfo);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException("Error converting VPC info to JSON", e);
+//        }
+//    }
 
     private static List<String> findPublicSubnetIds(BasicInfraDto infraDto) {
         return infraDto.subnetDtos().stream()

@@ -4,31 +4,24 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 
-interface VpcInfo {
-    vpcId: string;
-    publicSubnetIds: string[];
-    privateSubnetIds: string[];
-}
-
-function getVpcInfo(): VpcInfo {
-    const vpcInfoJson = process.env.VPC_INFO;
-    if (!vpcInfoJson) {
-        throw new Error('VPC information not found');
-    }
-    return JSON.parse(vpcInfoJson);
-}
-
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const vpcInfo = getVpcInfo();
+        const vpcId = this.node.tryGetContext('vpcId');
+        const publicSubnetIds = this.node.tryGetContext('publicSubnetIds');
+        const privateSubnetIds = this.node.tryGetContext('privateSubnetIds');
+        const availabilityZones = this.node.tryGetContext('availabilityZones');
+
+        if (!vpcId || !publicSubnetIds || !privateSubnetIds) {
+            throw new Error('VPC information not found in CDK context');
+        }
 
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
-            vpcId: vpcInfo.vpcId,
-            availabilityZones: this.availabilityZones,
-            publicSubnetIds: vpcInfo.publicSubnetIds,
-            privateSubnetIds: vpcInfo.privateSubnetIds,
+            vpcId: vpcId,
+            availabilityZones: availabilityZones,
+            publicSubnetIds: publicSubnetIds,
+            privateSubnetIds: privateSubnetIds,
         });
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
