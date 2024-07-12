@@ -24,6 +24,24 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache npm packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install AWS CLI
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -37,7 +55,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Install Java dependencies
-        run: ./gradlew clean build
+        run: ./gradlew clean build --no-daemon
 
       - name: Install TypeScript dependencies
         working-directory: eks
