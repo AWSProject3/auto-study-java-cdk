@@ -61,6 +61,9 @@ jobs:
           AWS_REGION: us-east-2
         run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
 
+      - name: List lambda directory contents
+        run: ls -R lambda
+
       - name: Deploy TypeScript EKS Stack
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
