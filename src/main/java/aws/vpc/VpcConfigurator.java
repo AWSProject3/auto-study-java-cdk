@@ -14,10 +14,6 @@ public class VpcConfigurator {
     }
 
     public Vpc configureEmptyVpc(String vpcId) {
-//        new CfnOutput(scope, "VpcId", CfnOutputProps.builder()
-//                .value(vpc.getVpcId())
-//                .exportName("auto-study-vpc-id")
-//                .build());
         return Builder.create(scope, vpcId)
                 .ipAddresses(IpAddresses.cidr("20.0.0.0/16"))
                 .maxAzs(2)

@@ -4,9 +4,14 @@ import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.s3.S3Administer;
 import aws.vpc.subnet.dto.SubnetDto;
+import aws.vpc.type.AzType;
 import aws.vpc.type.SubnetType;
-import java.util.List;
+import java.util.Arrays;
 import software.amazon.awscdk.App;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.PutParameterRequest;
+
+import java.util.List;
 
 public class AutoCodeApplication {
 
@@ -19,13 +24,16 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
-//        String vpcInfo = convertVpcInfoToJson(vpcInfraManager);
-//        System.setProperty("VPC_INFO", vpcInfo);
-
         BasicInfraDto infraDto = vpcInfraManager.infraDto();
-        app.getNode().setContext("vpcId", infraDto.vpcId());
-        app.getNode().setContext("publicSubnetIds", findPublicSubnetIds(infraDto));
-        app.getNode().setContext("privateSubnetIds", findPrivateSubnetIds(infraDto));
+        String vpcId = infraDto.vpcId();
+        List<String> publicSubnetIds = findPublicSubnetIds(infraDto);
+        List<String> privateSubnetIds = findPrivateSubnetIds(infraDto);
+        List<String> availabilityZones = Arrays.stream(AzType.values()).map(AzType::getValue).toList();
+
+        storeParameterInSSM("/eks-config/vpcId", vpcId);
+        storeParameterInSSM("/eks-config/publicSubnetIds", String.join(",", publicSubnetIds));
+        storeParameterInSSM("/eks-config/privateSubnetIds", String.join(",", privateSubnetIds));
+        storeParameterInSSM("/eks-config/availabilityZones", String.join(",", availabilityZones));
 
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
@@ -38,21 +46,16 @@ public class AutoCodeApplication {
         app.synth();
     }
 
-//    private static String convertVpcInfoToJson(VpcInfraManager vpcInfraManager) {
-//        BasicInfraDto infraDto = vpcInfraManager.infraDto();
-//        Map<String, Object> vpcInfo = new HashMap<>();
-//        vpcInfo.put("vpcId", infraDto.vpcId());
-//        vpcInfo.put("publicSubnetIds", findPublicSubnetIds(infraDto));
-//        vpcInfo.put("privateSubnetIds", findPrivateSubnetIds(infraDto));
-//        vpcInfo.put("availabilityZones", List.of(AzType.AZ_1A, AzType.AZ_1B));
-//
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        try {
-//            return objectMapper.writeValueAsString(vpcInfo);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException("Error converting VPC info to JSON", e);
-//        }
-//    }
+    private static void storeParameterInSSM(String parameterName, String parameterValue) {
+        SsmClient ssmClient = SsmClient.builder().build();
+        PutParameterRequest request = PutParameterRequest.builder()
+                .name(parameterName)
+                .value(parameterValue)
+                .type("String")
+                .overwrite(true)
+                .build();
+        ssmClient.putParameter(request);
+    }
 
     private static List<String> findPublicSubnetIds(BasicInfraDto infraDto) {
         return infraDto.subnetDtos().stream()

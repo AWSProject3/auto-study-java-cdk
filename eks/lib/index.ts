@@ -2,20 +2,17 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import {Construct} from 'constructs';
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const vpcId = this.node.tryGetContext('vpcId');
-        const publicSubnetIds = this.node.tryGetContext('publicSubnetIds');
-        const privateSubnetIds = this.node.tryGetContext('privateSubnetIds');
-        const availabilityZones = this.node.tryGetContext('availabilityZones');
-
-        if (!vpcId || !publicSubnetIds || !privateSubnetIds) {
-            throw new Error('VPC information not found in CDK context');
-        }
+        const vpcId = ssm.StringParameter.valueForStringParameter(this, '/eks-config/vpcId');
+        const publicSubnetIds = ssm.StringParameter.valueForStringParameter(this, '/eks-config/publicSubnetIds').split(',');
+        const privateSubnetIds = ssm.StringParameter.valueForStringParameter(this, '/eks-config/privateSubnetIds').split(',');
+        const availabilityZones = ssm.StringParameter.valueForStringParameter(this, '/eks-config/availabilityZones').split(',');
 
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
             vpcId: vpcId,
