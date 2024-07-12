@@ -33,9 +33,9 @@ public class PrivateSubnet {
                 .mapPublicIpOnLaunch(false)
                 .build();
 
-        new CfnOutput(scope, "PrivateSubnetId " + az , CfnOutputProps.builder()
+        new CfnOutput(scope, "PrivateSubnetId" + az , CfnOutputProps.builder()
                 .value(subnet.getAttrSubnetId())
-                .exportName("MyPrivateSubnetId " + az.getValue())
+                .exportName("MyPrivateSubnetId" + az.getValue())
                 .build());
 
         return subnet;
