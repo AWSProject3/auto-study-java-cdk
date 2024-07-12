@@ -1,10 +1,9 @@
 package aws.vpc.rds;
 
-import static software.amazon.awscdk.Duration.days;
-import static software.amazon.awscdk.SecretValue.unsafePlainText;
-
 import aws.vpc.VpcInfraManager;
 import java.util.Collections;
+import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.SecretValue;
 import software.amazon.awscdk.services.ec2.IPeer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
@@ -99,21 +98,21 @@ public class RdsConfigurator {
     private void createDbInstance(String rdsId, String dbName, String userName, String userPassword, IVpc vpc,
                                   SubnetGroup subnetGroup, SubnetSelection selector, SecurityGroup securityGroup) {
         DatabaseInstance.Builder.create(scope, rdsId)
-                .instanceIdentifier(rdsId)
+                .instanceIdentifier("rds-instance")
                 .engine(DatabaseInstanceEngine.mysql(MySqlInstanceEngineProps
                         .builder()
                         .version(MysqlEngineVersion.VER_8_0)
                         .build()))
                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.SMALL))
-                .credentials(Credentials.fromPassword(userName, unsafePlainText(userPassword)))
+                .credentials(Credentials.fromPassword(userName, SecretValue.unsafePlainText(userPassword)))
                 .vpc(vpc)
                 .vpcSubnets(selector)
                 .subnetGroup(subnetGroup)
-                .securityGroups(java.util.Collections.singletonList(securityGroup))
+                .securityGroups(Collections.singletonList(securityGroup))
                 .allocatedStorage(20)
                 .databaseName(dbName)
                 .deletionProtection(true)
-                .backupRetention(days(7))
+                .backupRetention(Duration.days(7))
                 .build();
     }
 }
