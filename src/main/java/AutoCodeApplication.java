@@ -4,14 +4,11 @@ import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.s3.S3Administer;
 import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.type.AzType;
 import aws.vpc.type.SubnetType;
-import java.util.Arrays;
+import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.PutParameterRequest;
-
-import java.util.List;
 
 public class AutoCodeApplication {
 
@@ -24,16 +21,16 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
-        BasicInfraDto infraDto = vpcInfraManager.infraDto();
-        String vpcId = infraDto.vpcId();
-        List<String> publicSubnetIds = findPublicSubnetIds(infraDto);
-        List<String> privateSubnetIds = findPrivateSubnetIds(infraDto);
-        List<String> availabilityZones = Arrays.stream(AzType.values()).map(AzType::getValue).toList();
-
-        storeParameterInSSM("/eks-config/vpcId", vpcId);
-        storeParameterInSSM("/eks-config/publicSubnetIds", String.join(",", publicSubnetIds));
-        storeParameterInSSM("/eks-config/privateSubnetIds", String.join(",", privateSubnetIds));
-        storeParameterInSSM("/eks-config/availabilityZones", String.join(",", availabilityZones));
+//        BasicInfraDto infraDto = vpcInfraManager.infraDto();
+//        String vpcId = infraDto.vpcId();
+//        List<String> publicSubnetIds = findPublicSubnetIds(infraDto);
+//        List<String> privateSubnetIds = findPrivateSubnetIds(infraDto);
+//        List<String> availabilityZones = Arrays.stream(AzType.values()).map(AzType::getValue).toList();
+//
+//        storeParameterInSSM("/eks-config/vpcId", vpcId);
+//        storeParameterInSSM("/eks-config/publicSubnetIds", String.join(",", publicSubnetIds));
+//        storeParameterInSSM("/eks-config/privateSubnetIds", String.join(",", privateSubnetIds));
+//        storeParameterInSSM("/eks-config/availabilityZones", String.join(",", availabilityZones));
 
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
