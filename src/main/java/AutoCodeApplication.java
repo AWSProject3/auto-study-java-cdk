@@ -1,14 +1,8 @@
 import aws.vpc.BasicInfraAdminister;
 import aws.vpc.VpcInfraManager;
-import aws.vpc.dto.BasicInfraDto;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.s3.S3Administer;
-import aws.vpc.subnet.dto.SubnetDto;
-import aws.vpc.type.SubnetType;
-import java.util.List;
 import software.amazon.awscdk.App;
-import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.model.PutParameterRequest;
 
 public class AutoCodeApplication {
 
@@ -21,17 +15,6 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
-//        BasicInfraDto infraDto = vpcInfraManager.infraDto();
-//        String vpcId = infraDto.vpcId();
-//        List<String> publicSubnetIds = findPublicSubnetIds(infraDto);
-//        List<String> privateSubnetIds = findPrivateSubnetIds(infraDto);
-//        List<String> availabilityZones = Arrays.stream(AzType.values()).map(AzType::getValue).toList();
-//
-//        storeParameterInSSM("/eks-config/vpcId", vpcId);
-//        storeParameterInSSM("/eks-config/publicSubnetIds", String.join(",", publicSubnetIds));
-//        storeParameterInSSM("/eks-config/privateSubnetIds", String.join(",", privateSubnetIds));
-//        storeParameterInSSM("/eks-config/availabilityZones", String.join(",", availabilityZones));
-
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
 
@@ -41,28 +24,5 @@ public class AutoCodeApplication {
         System.out.println("complete");
 
         app.synth();
-    }
-
-    private static void storeParameterInSSM(String parameterName, String parameterValue) {
-        SsmClient ssmClient = SsmClient.builder().build();
-        PutParameterRequest request = PutParameterRequest.builder()
-                .name(parameterName)
-                .value(parameterValue)
-                .type("String")
-                .overwrite(true)
-                .build();
-        ssmClient.putParameter(request);
-    }
-
-    private static List<String> findPublicSubnetIds(BasicInfraDto infraDto) {
-        return infraDto.subnetDtos().stream()
-                .filter(subnetDto -> subnetDto.type() == SubnetType.PUBLIC_TYPE)
-                .map(SubnetDto::id).toList();
-    }
-
-    private static List<String> findPrivateSubnetIds(BasicInfraDto infraDto) {
-        return infraDto.subnetDtos().stream()
-                .filter(subnetDto -> subnetDto.type() == SubnetType.PRIVATE_TYPE)
-                .map(SubnetDto::id).toList();
     }
 }
