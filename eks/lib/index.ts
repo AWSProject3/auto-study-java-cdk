@@ -51,15 +51,10 @@ export class EksConfigStack extends cdk.Stack {
             },
         });
 
-        const vpcId = cdk.Token.asString(vpcInfoResource.getAttString('VpcId'));
-        const publicSubnetIds = cdk.Token.asString(vpcInfoResource.getAttString('PublicSubnetIds')).split(',');
-        const privateSubnetIds = cdk.Token.asString(vpcInfoResource.getAttString('PrivateSubnetIds')).split(',');
-        const availabilityZones = cdk.Token.asString(vpcInfoResource.getAttString('AvailabilityZones')).split(',');
-
-        console.log(`VPC ID: ${vpcId}`);
-        console.log(`Public Subnets: ${publicSubnetIds}`);
-        console.log(`Private Subnets: ${privateSubnetIds}`);
-        console.log(`Availability Zones: ${availabilityZones}`);
+        const vpcId = vpcInfoResource.getAttString('VpcId');
+        const publicSubnetIds = vpcInfoResource.getAttString('PublicSubnetIds').split(',');
+        const privateSubnetIds = vpcInfoResource.getAttString('PrivateSubnetIds').split(',');
+        const availabilityZones = vpcInfoResource.getAttString('AvailabilityZones').split(',');
 
         new cdk.CfnOutput(this, 'VpcInfo', {
             value: JSON.stringify({
@@ -70,7 +65,7 @@ export class EksConfigStack extends cdk.Stack {
             })
         });
 
-        const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
+        const vpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
             vpcId: vpcId,
             availabilityZones: availabilityZones,
             publicSubnetIds: publicSubnetIds,
@@ -90,7 +85,7 @@ export class EksConfigStack extends cdk.Stack {
                     maxSize: 6,
                     desiredSize: 3,
                     nodeGroupCapacityType: cdk.aws_eks.CapacityType.ON_DEMAND,
-                    nodeGroupSubnets: privateSubnets,
+                    nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
                 },
             ],
             vpcSubnets: [privateSubnets]
@@ -107,7 +102,7 @@ export class EksConfigStack extends cdk.Stack {
                 new blueprints.addons.ArgoCDAddOn()
             )
             .clusterProvider(clusterProvider)
-            .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.VpcProvider(vpc.vpcId))
+            .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
             .build(this, 'auto-study-eks');
 
         this.tagSubnets(vpc, 'auto-study-eks');
