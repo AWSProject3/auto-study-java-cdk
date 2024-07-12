@@ -10,8 +10,10 @@ import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ec2.Peer;
 import software.amazon.awscdk.services.ec2.Port;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
+import software.amazon.awscdk.services.ec2.SecurityGroup.Builder;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ec2.VpcLookupOptions;
@@ -73,11 +75,19 @@ public class RdsConfigurator {
     }
 
     private IPeer createEksSecurityGroup() {
-        return SecurityGroup.Builder.create(scope, "EksSecurityGroup")
+        SecurityGroup securityGroup = Builder.create(scope, "EksSecurityGroup")
                 .vpc(getVpc())
                 .allowAllOutbound(true)
                 .description("Security group for EKS cluster")
                 .build();
+
+        securityGroup.addIngressRule(
+                Peer.anyIpv4(),
+                Port.allTraffic(),
+                "Allow all inbound traffic"
+
+        );
+        return securityGroup;
     }
 
     private IVpc getVpc() {
