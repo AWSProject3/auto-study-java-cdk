@@ -1,5 +1,6 @@
 import aws.vpc.BasicInfraAdminister;
 import aws.vpc.VpcInfraManager;
+import aws.vpc.ecr.EcrAdminister;
 import aws.vpc.rds.RdsAdminister;
 import aws.vpc.s3.S3Administer;
 import software.amazon.awscdk.App;
@@ -21,7 +22,8 @@ public class AutoCodeApplication {
         S3Administer s3Administer = new S3Administer();
         s3Administer.createInfra(app, ACCOUNT_ID, REGION);
 
-        System.out.println("complete");
+        EcrAdminister ecrAdminister = new EcrAdminister();
+        ecrAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
         app.synth();
     }
