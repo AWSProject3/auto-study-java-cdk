@@ -2,74 +2,33 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as cr from 'aws-cdk-lib/custom-resources';
 import {Construct} from 'constructs';
+
+interface VpcInfo {
+    vpcId: string;
+    publicSubnetIds: string[];
+    privateSubnetIds: string[];
+}
+
+function getVpcInfo(): VpcInfo {
+    const vpcInfoJson = process.env.VPC_INFO;
+    if (!vpcInfoJson) {
+        throw new Error('VPC information not found');
+    }
+    return JSON.parse(vpcInfoJson);
+}
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const vpcName = 'auto-study-vpc';
-
-        const lambdaLayer = new lambda.LayerVersion(this, 'VpcInfoLayer', {
-            code: lambda.Code.fromAsset('lambda', {
-                bundling: {
-                    image: lambda.Runtime.PYTHON_3_12.bundlingImage,
-                    command: [
-                        'bash', '-c',
-                        'pip install -r requirements.txt -t /asset-output && cp -au . /asset-output'
-                    ],
-                },
-            }),
-            compatibleRuntimes: [lambda.Runtime.PYTHON_3_12],
-            description: 'A layer to add boto3',
-        });
-
-        const getVpcInfoFunction = new lambda.Function(this, 'GetVpcInfoFunction', {
-            runtime: lambda.Runtime.PYTHON_3_12,
-            handler: 'getVpcInfo.handler',
-            code: lambda.Code.fromAsset('lambda'),
-            layers: [lambdaLayer],
-            role: new iam.Role(this, 'LambdaExecutionRole', {
-                assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-                managedPolicies: [
-                    iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-                    iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ReadOnlyAccess'),
-                ],
-            }),
-        });
-
-        const vpcInfoProvider = new cr.Provider(this, 'VpcInfoProvider', {
-            onEventHandler: getVpcInfoFunction,
-        });
-
-        const vpcInfoResource = new cdk.CustomResource(this, 'VpcInfoResource', {
-            serviceToken: vpcInfoProvider.serviceToken,
-            properties: {
-                VpcName: vpcName,
-            },
-        });
-
-        const vpcId = vpcInfoResource.getAttString('VpcId');
-        const publicSubnetIds = vpcInfoResource.getAttString('PublicSubnetIds').split(',');
-        const privateSubnetIds = vpcInfoResource.getAttString('PrivateSubnetIds').split(',');
-        const availabilityZones = vpcInfoResource.getAttString('AvailabilityZones').split(',');
-
-        new cdk.CfnOutput(this, 'VpcInfo', {
-            value: JSON.stringify({
-                vpcId,
-                publicSubnetIds,
-                privateSubnetIds,
-                availabilityZones
-            })
-        });
+        const vpcInfo = getVpcInfo();
 
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
-            vpcId: vpcId,
-            availabilityZones: availabilityZones,
-            publicSubnetIds: publicSubnetIds,
-            privateSubnetIds: privateSubnetIds,
+            vpcId: vpcInfo.vpcId,
+            availabilityZones: this.availabilityZones,
+            publicSubnetIds: vpcInfo.publicSubnetIds,
+            privateSubnetIds: vpcInfo.privateSubnetIds,
         });
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
