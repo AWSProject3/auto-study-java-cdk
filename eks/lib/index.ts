@@ -74,9 +74,11 @@ export class EksConfigStack extends cdk.Stack {
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
+        const masterRole = this.createMasterRole();
+
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: cdk.aws_eks.KubernetesVersion.V1_27,
-            mastersRole: this.createMasterRole(),
+            mastersRole: masterRole,
             managedNodeGroups: [
                 {
                     id: "OnDemandNodes",
