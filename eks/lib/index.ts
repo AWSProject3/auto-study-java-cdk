@@ -35,6 +35,7 @@ export class EksConfigStack extends cdk.Stack {
                 assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
                 managedPolicies: [
                     iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+                    iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ReadOnlyAccess'),
                 ],
             }),
         });
@@ -51,16 +52,18 @@ export class EksConfigStack extends cdk.Stack {
         });
 
         const vpcId = vpcInfoResource.getAttString('VpcId');
-        const publicSubnetIds = vpcInfoResource.getAtt('PublicSubnetIds').toString().split(',');
-        const privateSubnetIds = vpcInfoResource.getAtt('PrivateSubnetIds').toString().split(',');
+        const publicSubnetIds = vpcInfoResource.getAttString('PublicSubnetIds').split(',');
+        const privateSubnetIds = vpcInfoResource.getAttString('PrivateSubnetIds').split(',');
+        const availabilityZones = vpcInfoResource.getAttString('AvailabilityZones').split(',');
 
-        const availabilityZones = ['us-east-2a', 'us-east-2b'];
+        console.log(`VPC ID: ${vpcId}`);
         console.log(`Public Subnets: ${publicSubnetIds}`);
         console.log(`Private Subnets: ${privateSubnetIds}`);
+        console.log(`Availability Zones: ${availabilityZones}`);
 
         const vpc = ec2.Vpc.fromVpcAttributes(this, 'ExistingVpc', {
             vpcId: vpcId,
-            availabilityZones: ['us-east-2a', 'us-east-2b'],
+            availabilityZones: availabilityZones,
             publicSubnetIds: publicSubnetIds,
             privateSubnetIds: privateSubnetIds,
         });

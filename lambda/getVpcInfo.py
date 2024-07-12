@@ -1,8 +1,10 @@
-import boto3
 import logging
+
+import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
 
 def handler(event, context):
     vpc_name = event['VpcName']
@@ -28,16 +30,15 @@ def handler(event, context):
     public_subnets = [subnet['SubnetId'] for subnet in subnets if subnet['MapPublicIpOnLaunch']]
     private_subnets = [subnet['SubnetId'] for subnet in subnets if not subnet['MapPublicIpOnLaunch']]
 
-    azs = {subnet['AvailabilityZone'] for subnet in subnets}
+    # 가용 영역 정보 수집
+    azs = sorted(list(set(subnet['AvailabilityZone'] for subnet in subnets)))
 
+    logger.info(f"VPC ID: {vpc_id}")
     logger.info(f"Available AZs: {azs}")
     logger.info(f"Public Subnets: {public_subnets}")
     logger.info(f"Private Subnets: {private_subnets}")
 
-    # if len(public_subnets) < len(azs) or len(private_subnets) < len(azs):
-    #     raise Exception('Number of public or private subnets does not match the number of availability zones')
-
-    # Ensure that there are enough subnets for each availability zone
+    # 각 AZ에 대해 public과 private 서브넷이 있는지 확인
     az_to_public_subnet = {az: [] for az in azs}
     az_to_private_subnet = {az: [] for az in azs}
 
@@ -48,15 +49,20 @@ def handler(event, context):
         else:
             az_to_private_subnet[az].append(subnet['SubnetId'])
 
-    # Flatten the lists
-    public_subnets = [subnet for subnets in az_to_public_subnet.values() for subnet in subnets]
-    private_subnets = [subnet for subnets in az_to_private_subnet.values() for subnet in subnets]
+    # 각 AZ에 대해 하나의 public과 private 서브넷만 선택
+    public_subnets = [subnets[0] if subnets else None for subnets in az_to_public_subnet.values()]
+    private_subnets = [subnets[0] if subnets else None for subnets in az_to_private_subnet.values()]
+
+    # None 값 제거
+    public_subnets = [subnet for subnet in public_subnets if subnet is not None]
+    private_subnets = [subnet for subnet in private_subnets if subnet is not None]
 
     logger.info(f"Final Public Subnets: {public_subnets}")
     logger.info(f"Final Private Subnets: {private_subnets}")
 
     return {
         'VpcId': vpc_id,
-        'PublicSubnetIds': public_subnets,
-        'PrivateSubnetIds': private_subnets
+        'PublicSubnetIds': ','.join(public_subnets),
+        'PrivateSubnetIds': ','.join(private_subnets),
+        'AvailabilityZones': ','.join(azs)
     }
