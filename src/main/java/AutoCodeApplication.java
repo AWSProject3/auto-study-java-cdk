@@ -7,8 +7,8 @@ import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
 
-    private static final String ACCOUNT_ID = "730335599027";
-    private static final String REGION = "us-east-2";
+    private static final String ACCOUNT_ID = "471112903915";
+    private static final String REGION = "us-east-1";
 
     public static void main(final String[] args) {
         App app = new App();

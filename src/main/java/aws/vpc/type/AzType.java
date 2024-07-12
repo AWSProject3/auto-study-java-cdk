@@ -3,8 +3,8 @@ package aws.vpc.type;
 
 public enum AzType {
 
-    AZ_1A("us-east-2a"),
-    AZ_1B("us-east-2b");
+    AZ_1A("us-east-1a"),
+    AZ_1B("us-east-1b");
 
     private final String value;
 
