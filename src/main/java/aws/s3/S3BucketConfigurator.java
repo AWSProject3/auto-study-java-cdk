@@ -1,4 +1,4 @@
-package aws.vpc.s3;
+package aws.s3;
 
 import java.util.List;
 import software.amazon.awscdk.Duration;
