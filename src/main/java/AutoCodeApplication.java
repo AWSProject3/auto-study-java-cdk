@@ -1,8 +1,8 @@
 import aws.vpc.BasicInfraAdminister;
 import aws.vpc.VpcInfraManager;
-import aws.vpc.ecr.EcrAdminister;
+import aws.ecr.EcrAdminister;
 import aws.vpc.rds.RdsAdminister;
-import aws.vpc.s3.S3Administer;
+import aws.s3.S3Administer;
 import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {

@@ -1,4 +1,4 @@
-package aws.vpc.ecr;
+package aws.ecr;
 
 import java.util.List;
 import software.amazon.awscdk.services.ecr.LifecycleRule;

@@ -1,4 +1,4 @@
-package aws.vpc.ecr;
+package aws.ecr;
 
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
