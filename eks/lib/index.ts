@@ -41,13 +41,30 @@ export class EksConfigStack extends cdk.Stack {
                 new blueprints.addons.CoreDnsAddOn(),
                 new blueprints.addons.KubeProxyAddOn(),
                 new blueprints.addons.AwsLoadBalancerControllerAddOn(),
-                new blueprints.addons.ArgoCDAddOn()
+                new blueprints.addons.ArgoCDAddOn(),
+                new blueprints.ExternalsSecretsAddOn({
+                    namespace: 'kube-system',
+                    iamPolicies: [this.createExternalSecretsPolicy()]
+                })
             )
             .clusterProvider(clusterProvider)
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
             .build(this, 'auto-study-eks');
 
         this.tagSubnets(vpc, 'auto-study-eks');
+    }
+
+    private createExternalSecretsPolicy(): iam.PolicyStatement {
+        return new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                'secretsmanager:GetResourcePolicy',
+                'secretsmanager:GetSecretValue',
+                'secretsmanager:DescribeSecret',
+                'secretsmanager:ListSecretVersionIds'
+            ],
+            resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:*`],
+        });
     }
 
     private tagSubnets(vpc: ec2.IVpc, clusterName: string) {
