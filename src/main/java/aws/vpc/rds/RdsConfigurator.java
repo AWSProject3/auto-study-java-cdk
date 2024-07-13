@@ -1,7 +1,9 @@
 package aws.vpc.rds;
 
 import aws.vpc.VpcInfraManager;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.SecretValue;
 import software.amazon.awscdk.services.ec2.IPeer;
@@ -16,11 +18,16 @@ import software.amazon.awscdk.services.ec2.SecurityGroup.Builder;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ec2.VpcLookupOptions;
+import software.amazon.awscdk.services.iam.Effect;
+import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.rds.Credentials;
 import software.amazon.awscdk.services.rds.DatabaseInstance;
 import software.amazon.awscdk.services.rds.DatabaseInstanceEngine;
 import software.amazon.awscdk.services.rds.MySqlInstanceEngineProps;
 import software.amazon.awscdk.services.rds.MysqlEngineVersion;
+import software.amazon.awscdk.services.rds.PerformanceInsightRetention;
 import software.amazon.awscdk.services.rds.SubnetGroup;
 import software.constructs.Construct;
 
@@ -113,6 +120,31 @@ public class RdsConfigurator {
                 .databaseName(dbName)
                 .deletionProtection(true)
                 .backupRetention(Duration.days(7))
+                .monitoringInterval(Duration.seconds(60))
+                .monitoringRole(createMonitoringRole(rdsId))
+                .enablePerformanceInsights(true)
+                .performanceInsightRetention(PerformanceInsightRetention.MONTHS_12)
                 .build();
+    }
+
+    private Role createMonitoringRole(String rdsId) {
+        Role monitoringRole = Role.Builder.create(scope, rdsId + "-MonitoringRole")
+                .assumedBy(new ServicePrincipal("monitoring.rds.amazonaws.com"))
+                .build();
+
+        monitoringRole.addToPolicy(
+                PolicyStatement.Builder
+                        .create()
+                        .effect(Effect.ALLOW)
+                        .actions(Arrays.asList(
+                                        "logs:CreateLogGroup",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams",
+                                        "logs:CreateLogStream"
+                                )
+                        )
+                        .resources(List.of("arn:aws:logs:*:*:*")).build());
+
+        return monitoringRole;
     }
 }
