@@ -15,27 +15,6 @@ export class EksConfigStack extends cdk.Stack {
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        const nodeGroupRole = new iam.Role(this, 'EksNodeGroupRole', {
-            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-        });
-
-        nodeGroupRole.addToPolicy(new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: [
-                'ec2:AttachVolume',
-                'ec2:DetachVolume',
-                'ec2:CreateVolume',
-                'ec2:DeleteVolume',
-                'ec2:DescribeVolumes',
-                'ec2:ModifyVolume'
-            ],
-            resources: ['*'],
-        }));
-
-        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
-        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
-        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_27,
             mastersRole: blueprints.getResource(context => {
@@ -50,7 +29,30 @@ export class EksConfigStack extends cdk.Stack {
                     desiredSize: 3,
                     nodeGroupCapacityType: eks.CapacityType.ON_DEMAND,
                     nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
-                    nodeRole: nodeGroupRole
+                    nodeRole: blueprints.getResource(context => {
+                        const nodeGroupRole = new iam.Role(context.scope, 'EksNodeGroupRole', {
+                            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+                        });
+
+                        nodeGroupRole.addToPolicy(new iam.PolicyStatement({
+                            effect: iam.Effect.ALLOW,
+                            actions: [
+                                'ec2:AttachVolume',
+                                'ec2:DetachVolume',
+                                'ec2:CreateVolume',
+                                'ec2:DeleteVolume',
+                                'ec2:DescribeVolumes',
+                                'ec2:ModifyVolume'
+                            ],
+                            resources: ['*'],
+                        }));
+
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+
+                        return nodeGroupRole;
+                    }),
                 },
             ],
             vpcSubnets: [privateSubnets]
