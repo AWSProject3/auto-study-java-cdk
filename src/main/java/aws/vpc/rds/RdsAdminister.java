@@ -11,7 +11,8 @@ public class RdsAdminister {
     public void createInfra(App app, String account, String region, VpcInfraManager vpcInfraManager) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        RdsConfigurator rdsConfigurator = new RdsConfigurator(stack, vpcInfraManager);
+        RdsConfigurator rdsConfigurator = new RdsConfigurator(stack, vpcInfraManager,
+                new RdsSubnetGroup(vpcInfraManager, stack), new RdsSecurityGroup(stack));
         rdsConfigurator.configure("rds-instance", "autostudy", "admin", "0912dltncks!VC");
     }
 
