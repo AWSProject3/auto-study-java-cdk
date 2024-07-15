@@ -42,49 +42,45 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install AWS CLI
+      - name: Install AWS CLI and CDK CLI
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install --update
+          npm install -g aws-cdk
 
-      - name: Install CDK CLI
-        run: npm install -g aws-cdk
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
+      - name: Grant execute permission to gradlew and build Java project
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon
 
-      - name: Install Java dependencies
-        run: ./gradlew clean build --no-daemon
-
-      - name: Install TypeScript dependencies
+      - name: Install TypeScript dependencies and build
         working-directory: eks
         run: |
           npm ci
           npm run build
 
       - name: Bootstrap CDK
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION}
+          cdk bootstrap aws://${AWS_ACCOUNT_ID}/${{ secrets.AWS_REGION }}
 
       - name: Deploy Java CDK Stack
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
 
-      - name: Deploy TypeScript EKS Stack
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        working-directory: eks
+      - name: Set Lambda environment variables
         run: |
-          npm run build
-          cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"
+          aws lambda update-function-configuration \
+          --function-name UpdateGitOpsRepo \
+          --environment Variables={GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }},GITHUB_REPO=${{ secrets.GITOPS_REPO }}}
+
+      - name: Deploy TypeScript EKS Stack
+        working-directory: eks
+        run: cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"
