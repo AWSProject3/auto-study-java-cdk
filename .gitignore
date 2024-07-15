@@ -15,6 +15,7 @@ Desktop.ini
 *.log
 *.war
 *.jar
+*.iml
 
 # Node.js
 node_modules/
@@ -29,3 +30,6 @@ cdk.out/
 
 # Python
 venv/
+
+# resources
+resources/
