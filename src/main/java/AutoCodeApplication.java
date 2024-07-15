@@ -1,8 +1,9 @@
+import aws.ecr.EcrAdminister;
+import aws.eventbridge.EventBridgeAdminister;
+import aws.s3.S3Administer;
 import aws.vpc.BasicInfraAdminister;
 import aws.vpc.VpcInfraManager;
-import aws.ecr.EcrAdminister;
 import aws.vpc.rds.RdsAdminister;
-import aws.s3.S3Administer;
 import software.amazon.awscdk.App;
 
 public class AutoCodeApplication {
@@ -24,6 +25,9 @@ public class AutoCodeApplication {
 
         EcrAdminister ecrAdminister = new EcrAdminister();
         ecrAdminister.createInfra(app, ACCOUNT_ID, REGION);
+
+        EventBridgeAdminister eventBridgeAdminister = new EventBridgeAdminister();
+        eventBridgeAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
         app.synth();
     }
