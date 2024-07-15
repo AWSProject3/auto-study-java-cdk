@@ -16,7 +16,7 @@ public class EventBridgeAdminister {
     }
 
     private Stack createStack(App app, Environment env) {
-        return new Stack(app, "EventBridgeAdminister", StackProps.builder().env(env).build());
+        return new Stack(app, "EventBridgeStack", StackProps.builder().env(env).build());
     }
 
     private Environment createEnv(String account, String region) {
