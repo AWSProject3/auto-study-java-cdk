@@ -108,7 +108,7 @@ public class RdsConfigurator {
                 .instanceIdentifier("rds-instance")
                 .engine(DatabaseInstanceEngine.mysql(MySqlInstanceEngineProps
                         .builder()
-                        .version(MysqlEngineVersion.VER_8_0_32)
+                        .version(MysqlEngineVersion.VER_8_0)
                         .build()))
                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MEDIUM))
                 .credentials(Credentials.fromPassword(userName, SecretValue.unsafePlainText(userPassword)))
