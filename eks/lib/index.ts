@@ -43,7 +43,7 @@ export class EksConfigStack extends cdk.Stack {
                 new blueprints.addons.AwsLoadBalancerControllerAddOn(),
                 new blueprints.addons.ArgoCDAddOn(),
                 new blueprints.ExternalsSecretsAddOn({
-                    namespace: 'kube-system',
+                    namespace: 'app',
                     iamPolicies: [this.createExternalSecretsPolicy()]
                 })
             )
