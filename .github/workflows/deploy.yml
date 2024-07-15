@@ -73,7 +73,7 @@ jobs:
           cdk bootstrap aws://${AWS_ACCOUNT_ID}/${{ secrets.AWS_REGION }}
 
       - name: Deploy Java CDK Stack
-        run: cdk deploy --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
+        run: cdk deploy --debug --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
 
       - name: Set Lambda environment variables
         run: |

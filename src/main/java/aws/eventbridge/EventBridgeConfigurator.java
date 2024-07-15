@@ -34,6 +34,32 @@ public class EventBridgeConfigurator {
         eventBridgeRule.addTarget(new LambdaFunction(lambda));
     }
 
+    private Function createLambda() {
+        BundlingOptions bundling = BundlingOptions.builder()
+                .command(createPackagingInstructions())
+                .image(Runtime.PYTHON_3_11.getBundlingImage())
+                .user("root")
+                .outputType(BundlingOutput.NOT_ARCHIVED)
+                .build();
+
+        return Function.Builder.create(scope, "UpdateGitOpsRepo")
+                .runtime(Runtime.PYTHON_3_11)
+                .handler(LAMBDA_HANDLER)
+                .code(Code.fromAsset("lambda", AssetOptions.builder()
+                        .bundling(bundling)
+                        .build()))
+                .timeout(Duration.seconds(30))
+                .memorySize(256)
+                .build();
+    }
+
+    private List<String> createPackagingInstructions() {
+        return Arrays.asList(
+                "/bin/sh", "-c",
+                "pip install -r requirements.txt -t /asset-output && cp update_gitops_repo.py /asset-output"
+        );
+    }
+
     private PolicyStatement createLambdaExecutionRole() {
         return PolicyStatement.Builder.create()
                 .actions(Collections.singletonList("ecr:DescribeImages"))
@@ -49,30 +75,6 @@ public class EventBridgeConfigurator {
                         .detail(Collections.singletonMap("action-type",
                                 Collections.singletonList("PUSH")))
                         .build())
-                .build();
-    }
-
-    private Function createLambda() {
-        List<String> packagingInstructions = Arrays.asList(
-                "/bin/sh", "-c",
-                "pip install -r requirements.txt -t /asset-output && cp update_gitops_repo.py /asset-output"
-        );
-
-        BundlingOptions bundling = BundlingOptions.builder()
-                .command(packagingInstructions)
-                .image(Runtime.PYTHON_3_11.getBundlingImage())
-                .user("root")
-                .outputType(BundlingOutput.ARCHIVED)
-                .build();
-
-        return Function.Builder.create(scope, "UpdateGitOpsRepo")
-                .runtime(Runtime.PYTHON_3_11)
-                .handler(LAMBDA_HANDLER)
-                .code(Code.fromAsset("lambda", AssetOptions.builder()
-                        .bundling(bundling)
-                        .build()))
-                .timeout(Duration.seconds(30))
-                .memorySize(256)
                 .build();
     }
 }
