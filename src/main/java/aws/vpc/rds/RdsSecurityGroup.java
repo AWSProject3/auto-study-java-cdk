@@ -1,5 +1,6 @@
 package aws.vpc.rds;
 
+import aws.vpc.util.TagUtils;
 import java.util.Collections;
 import software.amazon.awscdk.services.ec2.IPeer;
 import software.amazon.awscdk.services.ec2.IVpc;
@@ -26,6 +27,8 @@ public class RdsSecurityGroup {
                 .description("Security group for RDS instance " + rdsId)
                 .build();
 
+        TagUtils.applyTags(rdsSecurityGroup);
+
         rdsSecurityGroup.addIngressRule(
                 createEksSecurityGroup(),
                 Port.tcp(3306),
@@ -41,6 +44,8 @@ public class RdsSecurityGroup {
                 .allowAllOutbound(true)
                 .description("Security group for EKS cluster")
                 .build();
+
+        TagUtils.applyTags(securityGroup);
 
         securityGroup.addIngressRule(
                 Peer.anyIpv4(),

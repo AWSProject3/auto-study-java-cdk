@@ -1,6 +1,7 @@
 package aws.vpc.rds;
 
 import aws.vpc.VpcInfraManager;
+import aws.vpc.util.TagUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.rds.Credentials;
 import software.amazon.awscdk.services.rds.DatabaseInstance;
+import software.amazon.awscdk.services.rds.DatabaseInstance.Builder;
 import software.amazon.awscdk.services.rds.DatabaseInstanceEngine;
 import software.amazon.awscdk.services.rds.MySqlInstanceEngineProps;
 import software.amazon.awscdk.services.rds.MysqlEngineVersion;
@@ -51,7 +53,7 @@ public class RdsConfigurator {
 
     private void createDbInstance(String rdsId, String dbName, String userName, String userPassword, IVpc vpc,
                                   SubnetGroup subnetGroup, SecurityGroup securityGroup) {
-        DatabaseInstance.Builder.create(scope, rdsId)
+        DatabaseInstance database = Builder.create(scope, rdsId)
                 .instanceIdentifier("rds-instance")
                 .engine(DatabaseInstanceEngine.mysql(MySqlInstanceEngineProps
                         .builder()
@@ -71,6 +73,8 @@ public class RdsConfigurator {
                 .enablePerformanceInsights(true)
                 .performanceInsightRetention(PerformanceInsightRetention.MONTHS_12)
                 .build();
+
+        TagUtils.applyTags(database);
     }
 
     private Role createMonitoringRole(String rdsId) {

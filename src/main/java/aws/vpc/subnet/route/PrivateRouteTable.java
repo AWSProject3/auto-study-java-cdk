@@ -2,8 +2,10 @@ package aws.vpc.subnet.route;
 
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
+import aws.vpc.util.TagUtils;
 import java.util.Optional;
 import software.amazon.awscdk.services.ec2.CfnRoute;
+import software.amazon.awscdk.services.ec2.CfnRoute.Builder;
 import software.amazon.awscdk.services.ec2.CfnRouteTable;
 import software.amazon.awscdk.services.ec2.CfnSubnetRouteTableAssociation;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -60,10 +62,12 @@ public class PrivateRouteTable implements RouteTable {
     }
 
     private void assignRoute(String routeId, String routeTableId, NatGatewayDto natGateway) {
-        CfnRoute.Builder.create(scope, routeId)
+        CfnRoute route = Builder.create(scope, routeId)
                 .routeTableId(routeTableId)
                 .destinationCidrBlock(CIDR)
                 .natGatewayId(natGateway.id())
                 .build();
+
+        TagUtils.applyTags(route);
     }
 }

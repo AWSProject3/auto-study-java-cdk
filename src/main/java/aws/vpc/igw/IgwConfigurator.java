@@ -1,6 +1,8 @@
 package aws.vpc.igw;
 
+import aws.vpc.util.TagUtils;
 import software.amazon.awscdk.services.ec2.CfnInternetGateway;
+import software.amazon.awscdk.services.ec2.CfnInternetGateway.Builder;
 import software.amazon.awscdk.services.ec2.CfnVPCGatewayAttachment;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
@@ -23,7 +25,9 @@ public class IgwConfigurator {
     }
 
     private CfnInternetGateway createIgw(String igwId) {
-        return CfnInternetGateway.Builder.create(scope, igwId).build();
+        CfnInternetGateway igw = Builder.create(scope, igwId).build();
+        TagUtils.applyTags(igw);
+        return igw;
     }
 
     private void attachIgwToVpc(String igwId, CfnInternetGateway igw) {
