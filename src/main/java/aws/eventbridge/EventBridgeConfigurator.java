@@ -9,15 +9,15 @@ import software.constructs.Construct;
 
 public class EventBridgeConfigurator {
     private final Construct scope;
-    private final LambdaGenerator lambdaGenerator;
+    private final LambdaConfigurator lambdaConfigurator;
 
-    public EventBridgeConfigurator(Construct scope, LambdaGenerator lambdaGenerator) {
+    public EventBridgeConfigurator(Construct scope, LambdaConfigurator lambdaConfigurator) {
         this.scope = scope;
-        this.lambdaGenerator = lambdaGenerator;
+        this.lambdaConfigurator = lambdaConfigurator;
     }
 
     public void configure() {
-        Function lambda = lambdaGenerator.createLambdaWithExecutionRole();
+        Function lambda = lambdaConfigurator.createLambdaWithExecutionRole();
         Rule eventBridgeRule = createEventBridgeRule();
         eventBridgeRule.addTarget(new LambdaFunction(lambda));
     }

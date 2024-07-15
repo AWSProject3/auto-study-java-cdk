@@ -75,11 +75,14 @@ jobs:
       - name: Deploy Java CDK Stack
         run: cdk deploy --debug --app "java -jar build/libs/app-1.0-SNAPSHOT.jar" --require-approval never --all
 
+      - name: Wait for Lambda function to be ready
+        run: sleep 30
+
       - name: Set Lambda environment variables
         run: |
           aws lambda update-function-configuration \
           --function-name UpdateGitOpsRepo \
-          --environment Variables={GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }},GITOPS_REPO=${{ secrets.GITOPS_REPO }}}
+          --environment '{"Variables":{"GITHUB_TOKEN":"${{ secrets.GITHUB_TOKEN }}","GITOPS_REPO":"${{ secrets.GITOPS_REPO }}"}}'
 
       - name: Deploy TypeScript EKS Stack
         working-directory: eks

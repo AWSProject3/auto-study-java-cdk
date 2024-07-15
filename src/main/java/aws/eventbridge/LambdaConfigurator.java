@@ -14,13 +14,13 @@ import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.constructs.Construct;
 
-public class LambdaGenerator {
+public class LambdaConfigurator {
 
     private static final String LAMBDA_HANDLER = "update_gitops_repo.lambda_handler";
 
     private final Construct scope;
 
-    public LambdaGenerator(Construct scope) {
+    public LambdaConfigurator(Construct scope) {
         this.scope = scope;
     }
 
