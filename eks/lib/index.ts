@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 
@@ -14,8 +15,29 @@ export class EksConfigStack extends cdk.Stack {
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
+        const nodeGroupRole = new iam.Role(this, 'EksNodeGroupRole', {
+            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+        });
+
+        nodeGroupRole.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                'ec2:AttachVolume',
+                'ec2:DetachVolume',
+                'ec2:CreateVolume',
+                'ec2:DeleteVolume',
+                'ec2:DescribeVolumes',
+                'ec2:ModifyVolume'
+            ],
+            resources: ['*'],
+        }));
+
+        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+
         const clusterProvider = new blueprints.GenericClusterProvider({
-            version: cdk.aws_eks.KubernetesVersion.V1_27,
+            version: eks.KubernetesVersion.V1_27,
             mastersRole: blueprints.getResource(context => {
                 return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
             }),
@@ -26,8 +48,9 @@ export class EksConfigStack extends cdk.Stack {
                     minSize: 3,
                     maxSize: 6,
                     desiredSize: 3,
-                    nodeGroupCapacityType: cdk.aws_eks.CapacityType.ON_DEMAND,
+                    nodeGroupCapacityType: eks.CapacityType.ON_DEMAND,
                     nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
+                    nodeRole: nodeGroupRole
                 },
             ],
             vpcSubnets: [privateSubnets]
