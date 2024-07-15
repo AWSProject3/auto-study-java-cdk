@@ -1,70 +1,25 @@
 package aws.eventbridge;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import software.amazon.awscdk.BundlingOptions;
-import software.amazon.awscdk.BundlingOutput;
-import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.events.EventPattern;
 import software.amazon.awscdk.services.events.Rule;
 import software.amazon.awscdk.services.events.targets.LambdaFunction;
-import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.Runtime;
-import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.constructs.Construct;
 
 public class EventBridgeConfigurator {
-
-    private static final String LAMBDA_HANDLER = "update_gitops_repo.lambda_handler";
-
     private final Construct scope;
+    private final LambdaGenerator lambdaGenerator;
 
-    public EventBridgeConfigurator(Construct scope) {
+    public EventBridgeConfigurator(Construct scope, LambdaGenerator lambdaGenerator) {
         this.scope = scope;
+        this.lambdaGenerator = lambdaGenerator;
     }
 
     public void configure() {
-        Function lambda = createLambda();
-        lambda.addToRolePolicy(createLambdaExecutionRole());
-
+        Function lambda = lambdaGenerator.createLambdaWithExecutionRole();
         Rule eventBridgeRule = createEventBridgeRule();
         eventBridgeRule.addTarget(new LambdaFunction(lambda));
-    }
-
-    private Function createLambda() {
-        BundlingOptions bundling = BundlingOptions.builder()
-                .command(createPackagingInstructions())
-                .image(Runtime.PYTHON_3_11.getBundlingImage())
-                .user("root")
-                .outputType(BundlingOutput.NOT_ARCHIVED)
-                .build();
-
-        return Function.Builder.create(scope, "UpdateGitOpsRepo")
-                .runtime(Runtime.PYTHON_3_11)
-                .handler(LAMBDA_HANDLER)
-                .code(Code.fromAsset("lambda", AssetOptions.builder()
-                        .bundling(bundling)
-                        .build()))
-                .timeout(Duration.seconds(30))
-                .memorySize(256)
-                .build();
-    }
-
-    private List<String> createPackagingInstructions() {
-        return Arrays.asList(
-                "/bin/sh", "-c",
-                "pip install -r requirements.txt -t /asset-output && cp update_gitops_repo.py /asset-output"
-        );
-    }
-
-    private PolicyStatement createLambdaExecutionRole() {
-        return PolicyStatement.Builder.create()
-                .actions(Collections.singletonList("ecr:DescribeImages"))
-                .resources(Collections.singletonList("*"))
-                .build();
     }
 
     private Rule createEventBridgeRule() {

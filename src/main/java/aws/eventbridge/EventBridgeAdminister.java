@@ -10,7 +10,8 @@ public class EventBridgeAdminister {
     public void createInfra(App app, String account, String region) {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
-        EventBridgeConfigurator eventBridgeConfigurator = new EventBridgeConfigurator(stack);
+        EventBridgeConfigurator eventBridgeConfigurator = new EventBridgeConfigurator(stack,
+                new LambdaGenerator(stack));
         eventBridgeConfigurator.configure();
     }
 
