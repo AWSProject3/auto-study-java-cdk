@@ -31,5 +31,4 @@ public class AutoCodeApplication {
 
         app.synth();
     }
-    // action
 }
