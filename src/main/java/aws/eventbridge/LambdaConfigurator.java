@@ -39,6 +39,7 @@ public class LambdaConfigurator {
                 .build();
 
         return Builder.create(scope, "UpdateGitOpsRepo")
+                .functionName("UpdateGitOpsRepo")
                 .runtime(Runtime.PYTHON_3_11)
                 .handler(LAMBDA_HANDLER)
                 .code(Code.fromAsset("lambda", AssetOptions.builder()
