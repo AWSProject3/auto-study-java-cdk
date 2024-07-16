@@ -70,25 +70,18 @@ export class EksConfigStack extends cdk.Stack {
         const existingOidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
             this,
             'ExistingOidcProvider',
-            'arn:aws:iam::471112903915:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/F54C1B0B8C9CC2613FA2EF6B4DCF7FAF'
+            `arn:aws:iam::${this.account}:oidc-provider/oidc.eks.${this.region}.amazonaws.com/id/F54C1B0B8C9CC2613FA2EF6B4DCF7FAF`
         );
 
-        const kubectlRole = new iam.Role(this, 'KubectlRole', {
-            assumedBy: new iam.AccountRootPrincipal(),
-            roleName: `kubectl-role-${clusterName}`
-        });
+        const clusterCreatorRole = iam.Role.fromRoleArn(this, 'MasterRole',
+            `arn:aws:iam::${this.account}:role/EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq`);
 
         const existingCluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
             clusterName: clusterName,
             vpc: vpc,
             openIdConnectProvider: existingOidcProvider,
-            kubectlRoleArn: kubectlRole.roleArn
+            kubectlRoleArn: clusterCreatorRole.roleArn
         });
-
-        kubectlRole.addToPolicy(new iam.PolicyStatement({
-            actions: ['eks:DescribeCluster'],
-            resources: [existingCluster.clusterArn],
-        }));
 
         const nodeRole = this.createNodeRole();
 
