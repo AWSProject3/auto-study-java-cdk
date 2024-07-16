@@ -82,7 +82,8 @@ jobs:
         run: |
           aws lambda update-function-configuration \
           --function-name UpdateGitOpsRepo \
-          --environment '{"Variables":{"GITHUB_TOKEN":"${{ secrets.GITHUB_TOKEN }}","GITOPS_REPO":"${{ secrets.GITOPS_REPO }}"}}'
+          --environment '{"Variables":{"GITHUB_TOKEN":"${{ secrets.GITHUB_TOKEN }}","GITOPS_REPO":"${{ secrets.GITOPS_REPO }}"}}' \
+          --timeout 30
 
       - name: Deploy TypeScript EKS Stack
         working-directory: eks
