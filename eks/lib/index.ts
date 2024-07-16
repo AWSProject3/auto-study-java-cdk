@@ -81,6 +81,8 @@ export class EksConfigStack extends cdk.Stack {
             subnets: privateSubnets,
             nodeRole: this.createNodeRole(),
         });
+
+        new EbsCsiDriverAddOn().deploy(existingCluster as any);
     }
 
     private createNewCluster(vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets, clusterName: string) {
@@ -134,7 +136,6 @@ export class EksConfigStack extends cdk.Stack {
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-        // nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEBSCSIDriverPolicy'));
 
         return nodeRole;
     }
