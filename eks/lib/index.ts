@@ -3,6 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
+import {ClusterInfo} from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 import {AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId} from 'aws-cdk-lib/custom-resources';
 
@@ -84,56 +85,53 @@ export class EksConfigStack extends cdk.Stack {
         });
 
         const ebsCsiDriverAddOn = new blueprints.addons.EbsCsiDriverAddOn();
-        const clusterInfo: blueprints.ClusterInfo = {
+        const clusterInfo = {
             cluster: existingCluster,
             version: eks.KubernetesVersion.V1_27,
-            props: {
-                name: clusterName,
-                vpc: vpc,
-            }
-        };
+        } as ClusterInfo;
         ebsCsiDriverAddOn.deploy(clusterInfo);
 
-        const ebsCsiDriverChart = existingCluster.addHelmChart('EbsCsiDriver', {
-            chart: 'aws-ebs-csi-driver',
-            repository: 'https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
-            namespace: 'kube-system',
-            values: {
-                controller: {
-                    serviceAccount: {
-                        create: true,
-                        annotations: {
-                            'eks.amazonaws.com/role-arn': this.createEbsCsiDriverRole().roleArn
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private createEbsCsiDriverRole(): iam.Role {
-        const role = new iam.Role(this, 'EbsCsiDriverRole', {
-            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-        });
-
-        role.addToPolicy(new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: [
-                'ec2:CreateSnapshot',
-                'ec2:AttachVolume',
-                'ec2:DetachVolume',
-                'ec2:ModifyVolume',
-                'ec2:DescribeAvailabilityZones',
-                'ec2:DescribeInstances',
-                'ec2:DescribeSnapshots',
-                'ec2:DescribeTags',
-                'ec2:DescribeVolumes',
-                'ec2:DescribeVolumesModifications'
-            ],
-            resources: ['*'],
-        }));
-
-        return role;
+        //     const ebsCsiDriverChart = existingCluster.addHelmChart('EbsCsiDriver', {
+        //         chart: 'aws-ebs-csi-driver',
+        //         repository: 'https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
+        //         namespace: 'kube-system',
+        //         values: {
+        //             controller: {
+        //                 serviceAccount: {
+        //                     create: true,
+        //                     annotations: {
+        //                         'eks.amazonaws.com/role-arn': this.createEbsCsiDriverRole().roleArn
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     });
+        // }
+        //
+        // private createEbsCsiDriverRole(): iam.Role {
+        //     const role = new iam.Role(this, 'EbsCsiDriverRole', {
+        //         assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+        //     });
+        //
+        //     role.addToPolicy(new iam.PolicyStatement({
+        //         effect: iam.Effect.ALLOW,
+        //         actions: [
+        //             'ec2:CreateSnapshot',
+        //             'ec2:AttachVolume',
+        //             'ec2:DetachVolume',
+        //             'ec2:ModifyVolume',
+        //             'ec2:DescribeAvailabilityZones',
+        //             'ec2:DescribeInstances',
+        //             'ec2:DescribeSnapshots',
+        //             'ec2:DescribeTags',
+        //             'ec2:DescribeVolumes',
+        //             'ec2:DescribeVolumesModifications'
+        //         ],
+        //         resources: ['*'],
+        //     }));
+        //
+        //     return role;
+        // }
     }
 
     private createNewCluster(vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets, clusterName: string) {
