@@ -16,7 +16,7 @@ export class EksConfigStack extends cdk.Stack {
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
         const clusterProvider = new blueprints.GenericClusterProvider({
-            version: eks.KubernetesVersion.V1_27,
+            version: eks.KubernetesVersion.V1_30,
             mastersRole: blueprints.getResource(context => {
                 return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
             }),
