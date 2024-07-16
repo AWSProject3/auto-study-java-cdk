@@ -5,6 +5,7 @@ import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 import {AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId} from 'aws-cdk-lib/custom-resources';
+import {EbsCsiDriverAddOn} from "@aws-quickstart/eks-blueprints";
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -115,7 +116,8 @@ export class EksConfigStack extends cdk.Stack {
                 new blueprints.ExternalsSecretsAddOn({
                     namespace: 'app',
                     iamPolicies: [this.createExternalSecretsPolicy()]
-                })
+                }),
+                new EbsCsiDriverAddOn()
             )
             .clusterProvider(clusterProvider)
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
