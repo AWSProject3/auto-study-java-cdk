@@ -83,6 +83,17 @@ export class EksConfigStack extends cdk.Stack {
             nodeRole: nodeRole,
         });
 
+        const ebsCsiDriverAddOn = new blueprints.addons.EbsCsiDriverAddOn();
+        const clusterInfo: blueprints.ClusterInfo = {
+            cluster: existingCluster,
+            version: eks.KubernetesVersion.V1_27,
+            props: {
+                name: clusterName,
+                vpc: vpc,
+            }
+        };
+        ebsCsiDriverAddOn.deploy(clusterInfo);
+
         const ebsCsiDriverChart = existingCluster.addHelmChart('EbsCsiDriver', {
             chart: 'aws-ebs-csi-driver',
             repository: 'https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
