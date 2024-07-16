@@ -3,9 +3,9 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
+import {EbsCsiDriverAddOn} from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 import {AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId} from 'aws-cdk-lib/custom-resources';
-import {EbsCsiDriverAddOn} from "@aws-quickstart/eks-blueprints";
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -134,7 +134,7 @@ export class EksConfigStack extends cdk.Stack {
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-        nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEBSCSIDriverPolicy'));
+        // nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEBSCSIDriverPolicy'));
 
         return nodeRole;
     }
@@ -143,12 +143,16 @@ export class EksConfigStack extends cdk.Stack {
         role.addToPrincipalPolicy(new iam.PolicyStatement({
             effect: iam.Effect.ALLOW,
             actions: [
+                'ec2:CreateSnapshot',
                 'ec2:AttachVolume',
                 'ec2:DetachVolume',
-                'ec2:CreateVolume',
-                'ec2:DeleteVolume',
+                'ec2:ModifyVolume',
+                'ec2:DescribeAvailabilityZones',
+                'ec2:DescribeInstances',
+                'ec2:DescribeSnapshots',
+                'ec2:DescribeTags',
                 'ec2:DescribeVolumes',
-                'ec2:ModifyVolume'
+                'ec2:DescribeVolumesModifications'
             ],
             resources: ['*'],
         }));
