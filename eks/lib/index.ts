@@ -85,6 +85,11 @@ export class EksConfigStack extends cdk.Stack {
             kubectlRoleArn: kubectlRole.roleArn
         });
 
+        kubectlRole.addToPolicy(new iam.PolicyStatement({
+            actions: ['eks:DescribeCluster'],
+            resources: [existingCluster.clusterArn],
+        }));
+
         const nodeRole = this.createNodeRole();
 
         new eks.Nodegroup(this, 'UpdatedNodeGroup', {
