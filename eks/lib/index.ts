@@ -81,6 +81,32 @@ export class EksConfigStack extends cdk.Stack {
         const clusterCreatorRole = iam.Role.fromRoleArn(this, 'MasterRole',
             `arn:aws:iam::${this.account}:role/EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq`);
 
+        new AwsCustomResource(this, 'UpdateTrustRelationship', {
+            onUpdate: {
+                service: 'IAM',
+                action: 'updateAssumeRolePolicy',
+                parameters: {
+                    RoleName: 'EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq',
+                    PolicyDocument: JSON.stringify({
+                        Version: '2012-10-17',
+                        Statement: [
+                            {
+                                Effect: 'Allow',
+                                Principal: {
+                                    Service: ['eks.amazonaws.com', 'lambda.amazonaws.com']
+                                },
+                                Action: 'sts:AssumeRole'
+                            }
+                        ]
+                    })
+                },
+                physicalResourceId: PhysicalResourceId.of('UpdateTrustRelationship'),
+            },
+            policy: AwsCustomResourcePolicy.fromSdkCalls({
+                resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+            }),
+        });
+
         const existingCluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
             clusterName: clusterName,
             vpc: vpc,
