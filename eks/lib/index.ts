@@ -5,12 +5,8 @@ import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 
 export class EksConfigStack extends cdk.Stack {
-    private readonly nodeRole: iam.Role;
-
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
-
-        this.nodeRole = this.createNodeRole();
 
         const vpc = ec2.Vpc.fromLookup(this, 'ImportedVpc', {
             tags: {'Name': 'auto-study'}
@@ -32,7 +28,7 @@ export class EksConfigStack extends cdk.Stack {
                     desiredSize: 3,
                     nodeGroupCapacityType: cdk.aws_eks.CapacityType.ON_DEMAND,
                     nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
-                    nodeRole: this.nodeRole
+                    nodeRole: this.createNodeRole(scope)
                 },
             ],
             vpcSubnets: [privateSubnets]
@@ -60,8 +56,8 @@ export class EksConfigStack extends cdk.Stack {
         this.tagSubnets(vpc, 'auto-study-eks');
     }
 
-    private createNodeRole(): iam.Role {
-        const nodeRole = new iam.Role(this, 'EksNodeGroupRole', {
+    private createNodeRole(scope: Construct): iam.Role {
+        const nodeRole = new iam.Role(scope, 'EksNodeGroupRole', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
         });
 
