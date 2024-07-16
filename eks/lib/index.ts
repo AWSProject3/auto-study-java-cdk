@@ -67,9 +67,16 @@ export class EksConfigStack extends cdk.Stack {
     }
 
     private updateExistingCluster(clusterName: string, vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets) {
+        const existingOidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+            this,
+            'ExistingOidcProvider',
+            'arn:aws:iam::471112903915:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/F54C1B0B8C9CC2613FA2EF6B4DCF7FAF'
+        );
+
         const existingCluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
             clusterName: clusterName,
             vpc: vpc,
+            openIdConnectProvider: existingOidcProvider,
         });
 
         const nodeRole = this.createNodeRole();
@@ -90,48 +97,6 @@ export class EksConfigStack extends cdk.Stack {
             version: eks.KubernetesVersion.V1_27,
         } as ClusterInfo;
         ebsCsiDriverAddOn.deploy(clusterInfo);
-
-        //     const ebsCsiDriverChart = existingCluster.addHelmChart('EbsCsiDriver', {
-        //         chart: 'aws-ebs-csi-driver',
-        //         repository: 'https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
-        //         namespace: 'kube-system',
-        //         values: {
-        //             controller: {
-        //                 serviceAccount: {
-        //                     create: true,
-        //                     annotations: {
-        //                         'eks.amazonaws.com/role-arn': this.createEbsCsiDriverRole().roleArn
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     });
-        // }
-        //
-        // private createEbsCsiDriverRole(): iam.Role {
-        //     const role = new iam.Role(this, 'EbsCsiDriverRole', {
-        //         assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-        //     });
-        //
-        //     role.addToPolicy(new iam.PolicyStatement({
-        //         effect: iam.Effect.ALLOW,
-        //         actions: [
-        //             'ec2:CreateSnapshot',
-        //             'ec2:AttachVolume',
-        //             'ec2:DetachVolume',
-        //             'ec2:ModifyVolume',
-        //             'ec2:DescribeAvailabilityZones',
-        //             'ec2:DescribeInstances',
-        //             'ec2:DescribeSnapshots',
-        //             'ec2:DescribeTags',
-        //             'ec2:DescribeVolumes',
-        //             'ec2:DescribeVolumesModifications'
-        //         ],
-        //         resources: ['*'],
-        //     }));
-        //
-        //     return role;
-        // }
     }
 
     private createNewCluster(vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets, clusterName: string) {
