@@ -5,8 +5,12 @@ import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 
 export class EksConfigStack extends cdk.Stack {
+    private readonly nodeRole: iam.Role;
+
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
+
+        this.nodeRole = this.createNodeRole();
 
         const vpc = ec2.Vpc.fromLookup(this, 'ImportedVpc', {
             tags: {'Name': 'auto-study'}
@@ -28,7 +32,7 @@ export class EksConfigStack extends cdk.Stack {
                     desiredSize: 3,
                     nodeGroupCapacityType: cdk.aws_eks.CapacityType.ON_DEMAND,
                     nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
-                    nodeRole: this.createNodeRole()
+                    nodeRole: this.nodeRole
                 },
             ],
             vpcSubnets: [privateSubnets]
@@ -66,7 +70,6 @@ export class EksConfigStack extends cdk.Stack {
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
         nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-        // nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEBSCSIDriverPolicy'));
 
         return nodeRole;
     }
