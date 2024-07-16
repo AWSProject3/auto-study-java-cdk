@@ -40,6 +40,11 @@ export class EksConfigStack extends cdk.Stack {
             resources: [`arn:aws:eks:${this.region}:${this.account}:cluster/${clusterName}`],
         }));
 
+        checkClusterRole.addToPolicy(new iam.PolicyStatement({
+            actions: ['sts:AssumeRole'],
+            resources: [`arn:aws:iam::${this.account}:role/EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq`],
+        }));
+
         return new AwsCustomResource(this, 'CheckExistingCluster', {
             onCreate: {
                 service: 'EKS',
@@ -73,8 +78,14 @@ export class EksConfigStack extends cdk.Stack {
             `arn:aws:iam::${this.account}:oidc-provider/oidc.eks.${this.region}.amazonaws.com/id/F54C1B0B8C9CC2613FA2EF6B4DCF7FAF`
         );
 
-        const clusterCreatorRole = iam.Role.fromRoleArn(this, 'MasterRole',
-            `arn:aws:iam::${this.account}:role/EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq`);
+        // 수정: 마스터 역할의 신뢰 관계 수정
+        const clusterCreatorRole = new iam.Role(this, 'MasterRole', {
+            assumedBy: new iam.CompositePrincipal(
+                new iam.ServicePrincipal('eks.amazonaws.com'),
+                new iam.ServicePrincipal('lambda.amazonaws.com')
+            ),
+            roleName: 'EksConfigStackautostudyeks0876BD-MasterRole7C9FAFA5-TTEH0xq5Amfq'
+        });
 
         const existingCluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
             clusterName: clusterName,
@@ -109,7 +120,12 @@ export class EksConfigStack extends cdk.Stack {
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_27,
             mastersRole: blueprints.getResource(context => {
-                return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
+                return new iam.Role(context.scope, 'MasterRole', {
+                    assumedBy: new iam.CompositePrincipal(
+                        new iam.AccountRootPrincipal(),
+                        new iam.ServicePrincipal('lambda.amazonaws.com')
+                    )
+                });
             }),
             managedNodeGroups: [
                 {
