@@ -3,9 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
-import {EbsCsiDriverAddOn} from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
-import {AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId} from 'aws-cdk-lib/custom-resources';
 
 export class EksConfigStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,80 +15,6 @@ export class EksConfigStack extends cdk.Stack {
 
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        const clusterName = 'auto-study-eks';
-
-        const existingCluster = this.checkExistingCluster(clusterName);
-
-        if (existingCluster) {
-            this.updateExistingCluster(clusterName, vpc, privateSubnets);
-        } else {
-            this.createNewCluster(vpc, privateSubnets, clusterName);
-        }
-
-        this.tagSubnets(vpc, clusterName);
-    }
-
-    private checkExistingCluster(clusterName: string): AwsCustomResource {
-        const checkClusterRole = new iam.Role(this, 'CheckClusterRole', {
-            assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-        });
-
-        checkClusterRole.addToPolicy(new iam.PolicyStatement({
-            actions: ['eks:DescribeCluster'],
-            resources: [`arn:aws:eks:${this.region}:${this.account}:cluster/${clusterName}`],
-        }));
-
-        return new AwsCustomResource(this, 'CheckExistingCluster', {
-            onCreate: {
-                service: 'EKS',
-                action: 'describeCluster',
-                parameters: {
-                    name: clusterName
-                },
-                physicalResourceId: PhysicalResourceId.of(clusterName),
-            },
-            onUpdate: {
-                service: 'EKS',
-                action: 'describeCluster',
-                parameters: {
-                    name: clusterName
-                },
-                physicalResourceId: PhysicalResourceId.of(clusterName),
-            },
-            policy: AwsCustomResourcePolicy.fromStatements([
-                new iam.PolicyStatement({
-                    actions: ['eks:DescribeCluster'],
-                    resources: [`arn:aws:eks:${this.region}:${this.account}:cluster/${clusterName}`],
-                }),
-            ]),
-        });
-    }
-
-    private updateExistingCluster(clusterName: string, vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets) {
-        const existingCluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
-            clusterName: clusterName,
-            vpc: vpc,
-        });
-
-        new eks.Nodegroup(this, 'UpdatedNodeGroup', {
-            cluster: existingCluster,
-            instanceTypes: [new ec2.InstanceType('m5.xlarge')],
-            minSize: 3,
-            maxSize: 6,
-            desiredSize: 3,
-            subnets: privateSubnets,
-            nodeRole: this.createNodeRole(),
-        });
-
-        const blueprint = blueprints.EksBlueprint.builder()
-            .account(this.account)
-            .region(this.region)
-            .addOns(new EbsCsiDriverAddOn())
-            .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
-            .build(this, clusterName);
-    }
-
-    private createNewCluster(vpc: ec2.IVpc, privateSubnets: ec2.SelectedSubnets, clusterName: string) {
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_27,
             mastersRole: blueprints.getResource(context => {
@@ -105,7 +29,30 @@ export class EksConfigStack extends cdk.Stack {
                     desiredSize: 3,
                     nodeGroupCapacityType: eks.CapacityType.ON_DEMAND,
                     nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
-                    nodeRole: this.createNodeRole(),
+                    nodeRole: blueprints.getResource(context => {
+                        const nodeGroupRole = new iam.Role(context.scope, 'EksNodeGroupRole', {
+                            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+                        });
+
+                        nodeGroupRole.addToPolicy(new iam.PolicyStatement({
+                            effect: iam.Effect.ALLOW,
+                            actions: [
+                                'ec2:AttachVolume',
+                                'ec2:DetachVolume',
+                                'ec2:CreateVolume',
+                                'ec2:DeleteVolume',
+                                'ec2:DescribeVolumes',
+                                'ec2:ModifyVolume'
+                            ],
+                            resources: ['*'],
+                        }));
+
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+
+                        return nodeGroupRole;
+                    }),
                 },
             ],
             vpcSubnets: [privateSubnets]
@@ -124,44 +71,13 @@ export class EksConfigStack extends cdk.Stack {
                     namespace: 'app',
                     iamPolicies: [this.createExternalSecretsPolicy()]
                 }),
-                new EbsCsiDriverAddOn()
+                new blueprints.addons.EbsCsiDriverAddOn()
             )
             .clusterProvider(clusterProvider)
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
-            .build(this, clusterName);
-    }
+            .build(this, 'auto-study-eks');
 
-    private createNodeRole(): iam.Role {
-        const nodeRole = new iam.Role(this, 'EksNodeGroupRole', {
-            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-        });
-
-        this.addEbsPolicy(nodeRole);
-
-        nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
-        nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
-        nodeRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-
-        return nodeRole;
-    }
-
-    private addEbsPolicy(role: iam.IRole) {
-        role.addToPrincipalPolicy(new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: [
-                'ec2:CreateSnapshot',
-                'ec2:AttachVolume',
-                'ec2:DetachVolume',
-                'ec2:ModifyVolume',
-                'ec2:DescribeAvailabilityZones',
-                'ec2:DescribeInstances',
-                'ec2:DescribeSnapshots',
-                'ec2:DescribeTags',
-                'ec2:DescribeVolumes',
-                'ec2:DescribeVolumesModifications'
-            ],
-            resources: ['*'],
-        }));
+        this.tagSubnets(vpc, 'auto-study-eks');
     }
 
     private createExternalSecretsPolicy(): iam.PolicyStatement {
