@@ -75,6 +75,7 @@ export class EksConfigStack extends cdk.Stack {
             )
             .clusterProvider(clusterProvider)
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
+            .version(eks.KubernetesVersion.V1_27)
             .build(this, 'auto-study-eks');
 
         this.tagSubnets(vpc, 'auto-study-eks');
