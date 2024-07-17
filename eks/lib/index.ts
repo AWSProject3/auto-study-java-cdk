@@ -1,10 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
+import {custom_resources} from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
-import {custom_resources} from "aws-cdk-lib";
 
 export class EksConfigurator extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,24 +17,41 @@ export class EksConfigurator extends cdk.Stack {
         const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        const tagSubnets = new custom_resources.AwsCustomResource(this, 'TagSubnets', {
+        const tagPublicSubnets = new custom_resources.AwsCustomResource(this, 'TagPublicSubnets', {
             onCreate: {
                 service: 'EC2',
                 action: 'createTags',
                 parameters: {
-                    Resources: [...publicSubnets.subnetIds, ...privateSubnets.subnetIds],
+                    Resources: publicSubnets.subnetIds,
                     Tags: [
-                        {Key: 'kubernetes.io/role/elb', Value: '1'},
-                        {Key: 'kubernetes.io/role/internal-elb', Value: '1'},
-                        {Key: `kubernetes.io/cluster/auto-study-eks`, Value: 'shared'}
+                        {Key: 'kubernetes.io/role/elb', Value: '1'}
                     ]
                 },
-                physicalResourceId: custom_resources.PhysicalResourceId.of('SubnetTagging')
+                physicalResourceId: custom_resources.PhysicalResourceId.of('PublicSubnetTagging')
             },
             policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
         });
 
-        tagSubnets.node.addDependency(vpc);
+// Tag private subnets
+        const tagPrivateSubnets = new custom_resources.AwsCustomResource(this, 'TagPrivateSubnets', {
+            onCreate: {
+                service: 'EC2',
+                action: 'createTags',
+                parameters: {
+                    Resources: privateSubnets.subnetIds,
+                    Tags: [
+                        {Key: 'kubernetes.io/role/internal-elb', Value: '1'},
+                        {Key: `kubernetes.io/cluster/auto-study-eks`, Value: 'shared'}
+                    ]
+                },
+                physicalResourceId: custom_resources.PhysicalResourceId.of('PrivateSubnetTagging')
+            },
+            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
+        });
+
+// Ensure these custom resources are created after the VPC lookup
+        tagPublicSubnets.node.addDependency(vpc);
+        tagPrivateSubnets.node.addDependency(vpc);
 
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_30,
