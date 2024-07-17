@@ -85,6 +85,6 @@ jobs:
           --environment '{"Variables":{"GITHUB_TOKEN":"${{ secrets.GITHUB_TOKEN }}","GITOPS_REPO":"${{ secrets.GITOPS_REPO }}"}}' \
           --timeout 30
 
-      - name: Deploy TypeScript EKS Stack
-        working-directory: eks
-        run: cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"
+#      - name: Deploy TypeScript EKS Stack
+#        working-directory: eks
+#        run: cdk deploy --require-approval never --all -a "npx ts-node lib/index.ts"
