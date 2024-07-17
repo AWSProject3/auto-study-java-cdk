@@ -3,6 +3,7 @@ import aws.eventbridge.EventBridgeAdminister;
 import aws.s3.S3Administer;
 import aws.vpc.BasicInfraAdminister;
 import aws.vpc.VpcInfraManager;
+import aws.vpc.elasticcache.RedisAdminister;
 import aws.vpc.rds.RdsAdminister;
 import software.amazon.awscdk.App;
 
@@ -19,6 +20,9 @@ public class AutoCodeApplication {
 
         RdsAdminister rdsAdminister = new RdsAdminister();
         rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
+
+        RedisAdminister redisAdminister = new RedisAdminister();
+        redisAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
 
         S3Administer s3Administer = new S3Administer();
         s3Administer.createInfra(app, ACCOUNT_ID, REGION);
