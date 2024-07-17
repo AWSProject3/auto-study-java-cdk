@@ -5,6 +5,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
+import {IVpc, SelectedSubnets} from "aws-cdk-lib/aws-ec2";
 
 export class EksConfigurator extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,41 +18,8 @@ export class EksConfigurator extends cdk.Stack {
         const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        const tagPublicSubnets = new custom_resources.AwsCustomResource(this, 'TagPublicSubnets', {
-            onCreate: {
-                service: 'EC2',
-                action: 'createTags',
-                parameters: {
-                    Resources: publicSubnets.subnetIds,
-                    Tags: [
-                        {Key: 'kubernetes.io/role/elb', Value: '1'}
-                    ]
-                },
-                physicalResourceId: custom_resources.PhysicalResourceId.of('PublicSubnetTagging')
-            },
-            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
-        });
-
-// Tag private subnets
-        const tagPrivateSubnets = new custom_resources.AwsCustomResource(this, 'TagPrivateSubnets', {
-            onCreate: {
-                service: 'EC2',
-                action: 'createTags',
-                parameters: {
-                    Resources: privateSubnets.subnetIds,
-                    Tags: [
-                        {Key: 'kubernetes.io/role/internal-elb', Value: '1'},
-                        {Key: `kubernetes.io/cluster/auto-study-eks`, Value: 'shared'}
-                    ]
-                },
-                physicalResourceId: custom_resources.PhysicalResourceId.of('PrivateSubnetTagging')
-            },
-            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
-        });
-
-// Ensure these custom resources are created after the VPC lookup
-        tagPublicSubnets.node.addDependency(vpc);
-        tagPrivateSubnets.node.addDependency(vpc);
+        this.tagToPublicSubnets(publicSubnets, vpc);
+        this.tagToPrivateSubnets(privateSubnets, vpc);
 
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_30,
@@ -102,8 +70,45 @@ export class EksConfigurator extends cdk.Stack {
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
             .version(eks.KubernetesVersion.V1_30)
             .build(this, 'auto-study-eks');
+    }
 
-        // this.tagSubnets(publicSubnets, privateSubnets, 'auto-study-eks');
+    private tagToPublicSubnets(publicSubnets: SelectedSubnets, vpc: IVpc) {
+        const tagPublicSubnets = new custom_resources.AwsCustomResource(this, 'TagPublicSubnets', {
+            onCreate: {
+                service: 'EC2',
+                action: 'createTags',
+                parameters: {
+                    Resources: publicSubnets.subnetIds,
+                    Tags: [
+                        {Key: 'kubernetes.io/role/elb', Value: '1'}
+                    ]
+                },
+                physicalResourceId: custom_resources.PhysicalResourceId.of('PublicSubnetTagging')
+            },
+            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
+        });
+
+        tagPublicSubnets.node.addDependency(vpc);
+    }
+
+    private tagToPrivateSubnets(privateSubnets: SelectedSubnets, vpc: IVpc) {
+        const tagPrivateSubnets = new custom_resources.AwsCustomResource(this, 'TagPrivateSubnets', {
+            onCreate: {
+                service: 'EC2',
+                action: 'createTags',
+                parameters: {
+                    Resources: privateSubnets.subnetIds,
+                    Tags: [
+                        {Key: 'kubernetes.io/role/internal-elb', Value: '1'},
+                        {Key: `kubernetes.io/cluster/auto-study-eks`, Value: 'shared'}
+                    ]
+                },
+                physicalResourceId: custom_resources.PhysicalResourceId.of('PrivateSubnetTagging')
+            },
+            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
+        });
+
+        tagPrivateSubnets.node.addDependency(vpc);
     }
 
     private createExternalSecretsPolicy(): iam.PolicyStatement {
@@ -118,17 +123,6 @@ export class EksConfigurator extends cdk.Stack {
             resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:*`],
         });
     }
-
-    // private tagSubnets(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets, clusterName: string) {
-    //     publicSubnets.subnets.forEach(subnet => {
-    //         cdk.Tags.of(subnet).add('kubernetes.io/role/elb', '1');
-    //     });
-    //
-    //     privateSubnets.subnets.forEach(subnet => {
-    //         cdk.Tags.of(subnet).add('kubernetes.io/role/internal-elb', '1');
-    //         cdk.Tags.of(subnet).add(`kubernetes.io/cluster/${clusterName}`, 'shared');
-    //     });
-    // }
 }
 
 const app = new cdk.App();
