@@ -17,8 +17,8 @@ public class AutoCodeApplication {
         BasicInfraAdminister infraAdminister = new BasicInfraAdminister();
         VpcInfraManager vpcInfraManager = infraAdminister.createInfra(app, ACCOUNT_ID, REGION);
 
-//        RdsAdminister rdsAdminister = new RdsAdminister();
-//        rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
+        RdsAdminister rdsAdminister = new RdsAdminister();
+        rdsAdminister.createInfra(app, ACCOUNT_ID, REGION, vpcInfraManager);
 
         S3Administer s3Administer = new S3Administer();
         s3Administer.createInfra(app, ACCOUNT_ID, REGION);
