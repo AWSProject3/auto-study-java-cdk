@@ -37,9 +37,11 @@ public class PrivateRouteTable implements RouteTable {
     }
 
     private CfnRouteTable createRouteTable() {
-        return CfnRouteTable.Builder.create(scope, routeTableId)
+        CfnRouteTable routeTable = CfnRouteTable.Builder.create(scope, routeTableId)
                 .vpcId(vpc.getVpcId())
                 .build();
+        TagUtils.applyTags(routeTable);
+        return routeTable;
     }
 
     private CfnSubnetRouteTableAssociation associateRouteTableWithSubnet(SubnetDto subnetDto, String routeTableId) {

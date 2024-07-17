@@ -1,9 +1,11 @@
 package aws.s3;
 
+import aws.vpc.util.TagUtils;
 import java.util.List;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
+import software.amazon.awscdk.services.s3.Bucket.Builder;
 import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.amazon.awscdk.services.s3.LifecycleRule;
 import software.amazon.awscdk.services.s3.NoncurrentVersionTransition;
@@ -20,13 +22,14 @@ public class S3BucketConfigurator {
 
     public void configureBucket(String bucketName, int expirationInDays, int nonCurrentVersionTransitionDays,
                                 boolean enableVersioning, boolean enablePublicAccess) {
-        Bucket.Builder.create(scope, bucketName)
+        Bucket bucket = Builder.create(scope, bucketName)
                 .bucketName(bucketName)
                 .encryption(BucketEncryption.S3_MANAGED)
                 .versioned(enableVersioning)
                 .blockPublicAccess(getBlockPublicAccess(enablePublicAccess))
                 .lifecycleRules(createLifecycleRules(expirationInDays, nonCurrentVersionTransitionDays))
                 .build();
+        TagUtils.applyTags(bucket);
     }
 
     private BlockPublicAccess getBlockPublicAccess(boolean enablePublicAccess) {

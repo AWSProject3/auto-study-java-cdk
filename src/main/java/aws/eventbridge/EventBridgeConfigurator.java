@@ -1,8 +1,10 @@
 package aws.eventbridge;
 
+import aws.vpc.util.TagUtils;
 import java.util.Collections;
 import software.amazon.awscdk.services.events.EventPattern;
 import software.amazon.awscdk.services.events.Rule;
+import software.amazon.awscdk.services.events.Rule.Builder;
 import software.amazon.awscdk.services.events.targets.LambdaFunction;
 import software.amazon.awscdk.services.lambda.Function;
 import software.constructs.Construct;
@@ -23,7 +25,7 @@ public class EventBridgeConfigurator {
     }
 
     private Rule createEventBridgeRule() {
-        return Rule.Builder.create(scope, "EcrPushRule")
+        Rule rule = Builder.create(scope, "EcrPushRule")
                 .eventPattern(EventPattern.builder()
                         .source(Collections.singletonList("aws.ecr"))
                         .detailType(Collections.singletonList("ECR Image Action"))
@@ -31,5 +33,7 @@ public class EventBridgeConfigurator {
                                 Collections.singletonList("PUSH")))
                         .build())
                 .build();
+        TagUtils.applyTags(rule);
+        return rule;
     }
 }

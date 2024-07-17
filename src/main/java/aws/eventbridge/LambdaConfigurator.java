@@ -1,5 +1,6 @@
 package aws.eventbridge;
 
+import aws.vpc.util.TagUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,7 @@ public class LambdaConfigurator {
                 .outputType(BundlingOutput.NOT_ARCHIVED)
                 .build();
 
-        return Builder.create(scope, "UpdateGitOpsRepo")
+        Function function = Builder.create(scope, "UpdateGitOpsRepo")
                 .functionName("UpdateGitOpsRepo")
                 .runtime(Runtime.PYTHON_3_11)
                 .handler(LAMBDA_HANDLER)
@@ -48,6 +49,8 @@ public class LambdaConfigurator {
                 .timeout(Duration.seconds(30))
                 .memorySize(256)
                 .build();
+        TagUtils.applyTags(function);
+        return function;
     }
 
     private List<String> createPackagingInstructions() {

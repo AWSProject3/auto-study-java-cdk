@@ -6,7 +6,7 @@ import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
 
-export class EksStack extends cdk.Stack {
+export class EksConfigurator extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
@@ -96,7 +96,7 @@ export class EksStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new EksStack(app, 'EksConfigStack', {
+new EksConfigurator(app, 'EksStack', {
     env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION

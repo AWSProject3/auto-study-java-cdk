@@ -5,6 +5,7 @@ import static aws.vpc.type.SubnetType.PUBLIC_TYPE;
 
 import aws.vpc.subnet.dto.NatGatewayDto;
 import aws.vpc.subnet.dto.SubnetDto;
+import aws.vpc.util.TagUtils;
 import software.amazon.awscdk.services.ec2.CfnEIP;
 import software.amazon.awscdk.services.ec2.CfnEIP.Builder;
 import software.amazon.awscdk.services.ec2.CfnNatGateway;
@@ -46,10 +47,12 @@ public class NatGatewayConfigurator {
     }
 
     private CfnNatGateway createNatGateway(String subnetId, CfnEIP eip, String id) {
-        return CfnNatGateway.Builder.create(scope, id)
+        CfnNatGateway natGateway = CfnNatGateway.Builder.create(scope, id)
                 .subnetId(subnetId)
                 .allocationId(eip.getAttrAllocationId())
                 .build();
+        TagUtils.applyTags(natGateway);
+        return natGateway;
     }
 
     private CfnEIP createEIP(String id) {
