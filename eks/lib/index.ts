@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import {SelectedSubnets} from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
@@ -13,6 +14,7 @@ export class EksStack extends cdk.Stack {
             tags: {'Name': 'auto-study'}
         });
 
+        const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
         const clusterProvider = new blueprints.GenericClusterProvider({
@@ -42,7 +44,7 @@ export class EksStack extends cdk.Stack {
                     }),
                 },
             ],
-            vpcSubnets: [privateSubnets]
+            vpcSubnets: [publicSubnets, privateSubnets]
         });
 
         const blueprint = blueprints.EksBlueprint.builder()
@@ -53,19 +55,19 @@ export class EksStack extends cdk.Stack {
                 new blueprints.addons.CoreDnsAddOn(),
                 new blueprints.addons.KubeProxyAddOn(),
                 new blueprints.addons.AwsLoadBalancerControllerAddOn(),
+                new blueprints.addons.EbsCsiDriverAddOn(),
                 new blueprints.addons.ArgoCDAddOn(),
                 new blueprints.ExternalsSecretsAddOn({
                     namespace: 'app',
                     iamPolicies: [this.createExternalSecretsPolicy()]
-                }),
-                new blueprints.addons.EbsCsiDriverAddOn()
+                })
             )
             .clusterProvider(clusterProvider)
             .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
             .version(eks.KubernetesVersion.V1_30)
             .build(this, 'auto-study-eks');
 
-        this.tagSubnets(vpc, 'auto-study-eks');
+        this.tagSubnets(publicSubnets, privateSubnets, 'auto-study-eks');
     }
 
     private createExternalSecretsPolicy(): iam.PolicyStatement {
@@ -81,12 +83,12 @@ export class EksStack extends cdk.Stack {
         });
     }
 
-    private tagSubnets(vpc: ec2.IVpc, clusterName: string) {
-        vpc.publicSubnets.forEach(subnet => {
+    private tagSubnets(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets, clusterName: string) {
+        publicSubnets.subnets.forEach(subnet => {
             cdk.Tags.of(subnet).add('kubernetes.io/role/elb', '1');
         });
 
-        vpc.privateSubnets.forEach(subnet => {
+        privateSubnets.subnets.forEach(subnet => {
             cdk.Tags.of(subnet).add('kubernetes.io/role/internal-elb', '1');
             cdk.Tags.of(subnet).add(`kubernetes.io/cluster/${clusterName}`, 'shared');
         });
