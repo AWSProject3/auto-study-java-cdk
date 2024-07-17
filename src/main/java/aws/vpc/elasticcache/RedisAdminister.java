@@ -12,7 +12,7 @@ public class RedisAdminister {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
         RedisConfigurator redisConfigurator = new RedisConfigurator(stack, vpcInfraManager,
-                new RedisSubnetGroup(vpcInfraManager, stack), new RedisSecurityGroup(stack));
+                new RedisSubnetGroup(stack), new RedisSecurityGroup(stack));
         redisConfigurator.configure("redis-cluster", "RedisCluster", 2, "6.x");
     }
 

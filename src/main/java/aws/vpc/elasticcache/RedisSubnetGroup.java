@@ -1,6 +1,5 @@
 package aws.vpc.elasticcache;
 
-import aws.vpc.VpcInfraManager;
 import aws.vpc.util.TagUtils;
 import java.util.List;
 import software.amazon.awscdk.services.ec2.ISubnet;
@@ -10,11 +9,9 @@ import software.constructs.Construct;
 
 public class RedisSubnetGroup {
 
-    private final VpcInfraManager vpcInfraManager;
     private final Construct scope;
 
-    public RedisSubnetGroup(VpcInfraManager vpcInfraManager, Construct scope) {
-        this.vpcInfraManager = vpcInfraManager;
+    public RedisSubnetGroup(Construct scope) {
         this.scope = scope;
     }
 

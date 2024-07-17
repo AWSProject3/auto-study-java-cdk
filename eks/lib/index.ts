@@ -13,15 +13,20 @@ export class EksConfigurator extends cdk.Stack {
             tags: {'Name': 'auto-study'}
         });
 
+        const TaggingVpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
+            vpcId: vpc.vpcId,
+            availabilityZones: vpc.availabilityZones
+        });
+
         const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        vpc.publicSubnets.forEach(subnet => {
+        TaggingVpc.publicSubnets.forEach(subnet => {
             let tags = cdk.Tags.of(subnet);
             tags.add('kubernetes.io/role/elb', '1');
         });
 
-        vpc.privateSubnets.forEach(subnet => {
+        TaggingVpc.privateSubnets.forEach(subnet => {
             let tags = cdk.Tags.of(subnet);
             tags.add('kubernetes.io/role/internal-elb', '1');
             tags.add(`kubernetes.io/cluster/auto-study-eks`, 'shared');
