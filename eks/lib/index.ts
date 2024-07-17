@@ -4,6 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
+import {custom_resources} from "aws-cdk-lib";
 
 export class EksConfigurator extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -13,24 +14,27 @@ export class EksConfigurator extends cdk.Stack {
             tags: {'Name': 'auto-study'}
         });
 
-        const TaggingVpc = ec2.Vpc.fromVpcAttributes(this, 'taggingVpc', {
-            vpcId: vpc.vpcId,
-            availabilityZones: vpc.availabilityZones
-        });
-
         const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
-        TaggingVpc.publicSubnets.forEach(subnet => {
-            let tags = cdk.Tags.of(subnet);
-            tags.add('kubernetes.io/role/elb', '1');
+        const tagSubnets = new custom_resources.AwsCustomResource(this, 'TagSubnets', {
+            onCreate: {
+                service: 'EC2',
+                action: 'createTags',
+                parameters: {
+                    Resources: [...publicSubnets.subnetIds, ...privateSubnets.subnetIds],
+                    Tags: [
+                        {Key: 'kubernetes.io/role/elb', Value: '1'},
+                        {Key: 'kubernetes.io/role/internal-elb', Value: '1'},
+                        {Key: `kubernetes.io/cluster/auto-study-eks`, Value: 'shared'}
+                    ]
+                },
+                physicalResourceId: custom_resources.PhysicalResourceId.of('SubnetTagging')
+            },
+            policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE})
         });
 
-        TaggingVpc.privateSubnets.forEach(subnet => {
-            let tags = cdk.Tags.of(subnet);
-            tags.add('kubernetes.io/role/internal-elb', '1');
-            tags.add(`kubernetes.io/cluster/auto-study-eks`, 'shared');
-        });
+        tagSubnets.node.addDependency(vpc);
 
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_30,
