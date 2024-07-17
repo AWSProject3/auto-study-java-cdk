@@ -13,7 +13,7 @@ export class EksConfigurator extends cdk.Stack {
             tags: {'Name': 'auto-study'}
         });
 
-        const TaggingVpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
+        const TaggingVpc = ec2.Vpc.fromVpcAttributes(this, 'taggingVpc', {
             vpcId: vpc.vpcId,
             availabilityZones: vpc.availabilityZones
         });
