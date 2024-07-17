@@ -11,7 +11,7 @@ public class S3Administer {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
         S3BucketConfigurator bucketConfigurator = new S3BucketConfigurator(stack);
-        bucketConfigurator.configureBucket("auto-study-bucket-ver3", 100, 30, true, false);
+        bucketConfigurator.configureBucket("auto-study-bucket-ver4", 100, 30, true, false);
     }
 
     private Stack createStack(App app, Environment env) {
