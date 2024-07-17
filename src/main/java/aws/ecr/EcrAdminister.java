@@ -11,7 +11,7 @@ public class EcrAdminister {
         Environment env = createEnv(account, region);
         Stack stack = createStack(app, env);
         EcrRepositoryConfigurator ecrRepositoryConfigurator = new EcrRepositoryConfigurator(stack);
-        ecrRepositoryConfigurator.configure("auto-study-app-ver2", 10);
+        ecrRepositoryConfigurator.configure("auto-study-app-ver4", 10);
     }
 
     private Stack createStack(App app, Environment env) {
