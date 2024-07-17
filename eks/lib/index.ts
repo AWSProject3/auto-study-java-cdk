@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import {SelectedSubnets} from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
@@ -16,6 +15,17 @@ export class EksConfigurator extends cdk.Stack {
 
         const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
+
+        vpc.publicSubnets.forEach(subnet => {
+            let tags = cdk.Tags.of(subnet);
+            tags.add('kubernetes.io/role/elb', '1');
+        });
+
+        vpc.privateSubnets.forEach(subnet => {
+            let tags = cdk.Tags.of(subnet);
+            tags.add('kubernetes.io/role/internal-elb', '1');
+            tags.add(`kubernetes.io/cluster/auto-study-eks`, 'shared');
+        });
 
         const clusterProvider = new blueprints.GenericClusterProvider({
             version: eks.KubernetesVersion.V1_30,
@@ -67,7 +77,7 @@ export class EksConfigurator extends cdk.Stack {
             .version(eks.KubernetesVersion.V1_30)
             .build(this, 'auto-study-eks');
 
-        this.tagSubnets(publicSubnets, privateSubnets, 'auto-study-eks');
+        // this.tagSubnets(publicSubnets, privateSubnets, 'auto-study-eks');
     }
 
     private createExternalSecretsPolicy(): iam.PolicyStatement {
@@ -83,16 +93,16 @@ export class EksConfigurator extends cdk.Stack {
         });
     }
 
-    private tagSubnets(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets, clusterName: string) {
-        publicSubnets.subnets.forEach(subnet => {
-            cdk.Tags.of(subnet).add('kubernetes.io/role/elb', '1');
-        });
-
-        privateSubnets.subnets.forEach(subnet => {
-            cdk.Tags.of(subnet).add('kubernetes.io/role/internal-elb', '1');
-            cdk.Tags.of(subnet).add(`kubernetes.io/cluster/${clusterName}`, 'shared');
-        });
-    }
+    // private tagSubnets(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets, clusterName: string) {
+    //     publicSubnets.subnets.forEach(subnet => {
+    //         cdk.Tags.of(subnet).add('kubernetes.io/role/elb', '1');
+    //     });
+    //
+    //     privateSubnets.subnets.forEach(subnet => {
+    //         cdk.Tags.of(subnet).add('kubernetes.io/role/internal-elb', '1');
+    //         cdk.Tags.of(subnet).add(`kubernetes.io/cluster/${clusterName}`, 'shared');
+    //     });
+    // }
 }
 
 const app = new cdk.App();
