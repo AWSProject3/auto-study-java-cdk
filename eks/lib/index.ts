@@ -14,7 +14,7 @@ export class EksConfigurator extends cdk.Stack {
             tags: {'Name': 'auto-study'}
         });
 
-        const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC});
+        const publicSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_ISOLATED});
         const privateSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS});
 
         const clusterProvider = new blueprints.GenericClusterProvider({
