@@ -1,15 +1,10 @@
 package aws.vpc.rds;
 
 import aws.vpc.util.TagUtils;
-import java.util.Collections;
-import software.amazon.awscdk.services.ec2.IPeer;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.Peer;
 import software.amazon.awscdk.services.ec2.Port;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
-import software.amazon.awscdk.services.ec2.SecurityGroup.Builder;
-import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.ec2.VpcLookupOptions;
 import software.constructs.Construct;
 
 public class RdsSecurityGroup {
@@ -30,35 +25,11 @@ public class RdsSecurityGroup {
         TagUtils.applyTags(rdsSecurityGroup);
 
         rdsSecurityGroup.addIngressRule(
-                createEksSecurityGroup(),
+                Peer.anyIpv4(),
                 Port.tcp(3306),
                 "Allow MySQL access from EKS pods"
         );
 
         return rdsSecurityGroup;
-    }
-
-    private IPeer createEksSecurityGroup() {
-        SecurityGroup securityGroup = Builder.create(scope, "EksSecurityGroup")
-                .vpc(getVpc())
-                .allowAllOutbound(true)
-                .description("Security group for EKS cluster")
-                .build();
-
-        TagUtils.applyTags(securityGroup);
-
-        securityGroup.addIngressRule(
-                Peer.anyIpv4(),
-                Port.allTraffic(),
-                "Allow all inbound traffic"
-
-        );
-        return securityGroup;
-    }
-
-    private IVpc getVpc() {
-        return Vpc.fromLookup(scope, "ExistingVPC", VpcLookupOptions.builder()
-                .tags(Collections.singletonMap("Name", "auto-study"))
-                .build());
     }
 }
