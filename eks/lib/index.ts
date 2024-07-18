@@ -1,11 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import {custom_resources} from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import {IVpc, SelectedSubnets} from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import {Construct} from 'constructs';
-import {IVpc, SelectedSubnets} from "aws-cdk-lib/aws-ec2";
 
 export class EksConfigurator extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -21,55 +21,7 @@ export class EksConfigurator extends cdk.Stack {
         this.tagToPublicSubnets(publicSubnets, vpc);
         this.tagToPrivateSubnets(privateSubnets, vpc);
 
-        const clusterProvider = new blueprints.GenericClusterProvider({
-            version: eks.KubernetesVersion.V1_30,
-            mastersRole: blueprints.getResource(context => {
-                return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
-            }),
-            managedNodeGroups: [
-                {
-                    id: "OnDemandNodes",
-                    instanceTypes: [new ec2.InstanceType('m5.xlarge')],
-                    minSize: 3,
-                    maxSize: 6,
-                    desiredSize: 3,
-                    nodeGroupCapacityType: eks.CapacityType.ON_DEMAND,
-                    nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
-                    nodeRole: blueprints.getResource(context => {
-                        const nodeGroupRole = new iam.Role(context.scope, 'EksNodeGroupRole', {
-                            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-                        });
-
-                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
-                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
-                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-
-                        return nodeGroupRole;
-                    }),
-                },
-            ],
-            vpcSubnets: [publicSubnets, privateSubnets]
-        });
-
-        const blueprint = blueprints.EksBlueprint.builder()
-            .account(this.account)
-            .region(this.region)
-            .addOns(
-                new blueprints.addons.VpcCniAddOn(),
-                new blueprints.addons.CoreDnsAddOn(),
-                new blueprints.addons.KubeProxyAddOn(),
-                new blueprints.addons.AwsLoadBalancerControllerAddOn(),
-                new blueprints.addons.EbsCsiDriverAddOn(),
-                new blueprints.addons.ArgoCDAddOn(),
-                new blueprints.ExternalsSecretsAddOn({
-                    namespace: 'app',
-                    iamPolicies: [this.createExternalSecretsPolicy()]
-                })
-            )
-            .clusterProvider(clusterProvider)
-            .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
-            .version(eks.KubernetesVersion.V1_30)
-            .build(this, 'auto-study-eks');
+        const blueprint = this.configureEks(publicSubnets, privateSubnets, vpc);
     }
 
     private tagToPublicSubnets(publicSubnets: SelectedSubnets, vpc: IVpc) {
@@ -122,6 +74,60 @@ export class EksConfigurator extends cdk.Stack {
             ],
             resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:*`],
         });
+    }
+
+    private createClusterProvider(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets) {
+        return new blueprints.GenericClusterProvider({
+            version: eks.KubernetesVersion.V1_30,
+            mastersRole: blueprints.getResource(context => {
+                return new iam.Role(context.scope, 'MasterRole', {assumedBy: new iam.AccountRootPrincipal()});
+            }),
+            managedNodeGroups: [
+                {
+                    id: "OnDemandNodes",
+                    instanceTypes: [new ec2.InstanceType('m5.xlarge')],
+                    minSize: 3,
+                    maxSize: 6,
+                    desiredSize: 3,
+                    nodeGroupCapacityType: eks.CapacityType.ON_DEMAND,
+                    nodeGroupSubnets: {subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS},
+                    nodeRole: blueprints.getResource(context => {
+                        const nodeGroupRole = new iam.Role(context.scope, 'EksNodeGroupRole', {
+                            assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+                        });
+
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+                        nodeGroupRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+
+                        return nodeGroupRole;
+                    }),
+                },
+            ],
+            vpcSubnets: [publicSubnets, privateSubnets]
+        });
+    }
+
+    private configureEks(publicSubnets: SelectedSubnets, privateSubnets: SelectedSubnets, vpc: IVpc) {
+        return blueprints.EksBlueprint.builder()
+            .account(this.account)
+            .region(this.region)
+            .addOns(
+                new blueprints.addons.VpcCniAddOn(),
+                new blueprints.addons.CoreDnsAddOn(),
+                new blueprints.addons.KubeProxyAddOn(),
+                new blueprints.addons.AwsLoadBalancerControllerAddOn(),
+                new blueprints.addons.EbsCsiDriverAddOn(),
+                new blueprints.addons.ArgoCDAddOn(),
+                new blueprints.ExternalsSecretsAddOn({
+                    namespace: 'app',
+                    iamPolicies: [this.createExternalSecretsPolicy()]
+                })
+            )
+            .clusterProvider(this.createClusterProvider(publicSubnets, privateSubnets))
+            .resourceProvider(blueprints.GlobalResources.Vpc, new blueprints.DirectVpcProvider(vpc))
+            .version(eks.KubernetesVersion.V1_30)
+            .build(this, 'auto-study-eks');
     }
 }
 
