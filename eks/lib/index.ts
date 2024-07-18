@@ -118,7 +118,7 @@ export class EksConfigurator extends cdk.Stack {
                 new blueprints.addons.KubeProxyAddOn(),
                 new blueprints.addons.AwsLoadBalancerControllerAddOn(),
                 new blueprints.addons.EbsCsiDriverAddOn(),
-                new blueprints.addons.ArgoCDAddOn(),
+                // new blueprints.addons.ArgoCDAddOn(),
                 new blueprints.ExternalsSecretsAddOn({
                     namespace: 'app',
                     iamPolicies: [this.createExternalSecretsPolicy()]
