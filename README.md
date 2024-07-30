@@ -44,5 +44,48 @@
 ![image](https://github.com/user-attachments/assets/9cd10c12-3b9c-406c-a9bf-5eb2ddd8bfdb)
 
 
+### 실제 기능 동작 이미지
+
+1. 로그인 이미지
+<img width="1280" alt="login1" src="https://github.com/user-attachments/assets/791c9d9d-ea34-4225-8cbd-4e2f5fd9599e">
+<img width="1280" alt="login2" src="https://github.com/user-attachments/assets/2c0230d7-0904-4435-a0a2-2ef95bf7ad31">
+
+2. 프로필 이미지
+<img width="1280" alt="profile1" src="https://github.com/user-attachments/assets/967e6f25-7b11-4c06-aecd-feb16803c27b">
+<img width="1280" alt="profile2" src="https://github.com/user-attachments/assets/0e406e66-fc7d-4bf7-918b-1cf643f608b1">
+
+3. 문제 이미지
+<img width="1280" alt="problem1" src="https://github.com/user-attachments/assets/f00c63b8-9aa0-4e77-8bf8-fe87673690bd">
+
+4. 힌트 이미지
+<img width="1280" alt="hint1" src="https://github.com/user-attachments/assets/87f97851-5868-42e4-a24a-1e43e1f309c8">
+
+5. 정답 이미지
+<img width="1280" alt="answer1" src="https://github.com/user-attachments/assets/0ec321a1-6321-4aad-b176-53f407ed4a1f">
+<img width="1280" alt="answer2" src="https://github.com/user-attachments/assets/9db09bbc-aa1c-44e5-b922-be51212b8b3a">
+
+6. 대시보드 이미지
+<img width="1280" alt="dashboard1" src="https://github.com/user-attachments/assets/3c768e17-106c-4e12-8243-082174790d70">
+<img width="1280" alt="dash2" src="https://github.com/user-attachments/assets/91552d88-c033-47f3-be13-246172eb79c9">
+<img width="1280" alt="dash3" src="https://github.com/user-attachments/assets/e3de7f33-3443-41ff-981d-4ffb3feaeba5">
+
+7. Q&A 이미지
+<img width="1280" alt="list1" src="https://github.com/user-attachments/assets/601f411f-2350-4de1-a03e-d30cfcd920c7">
+
+
 ### CDK 배포 플로우
 ![image](https://github.com/user-attachments/assets/61787fe0-c30e-4cfd-b4e1-7fe1501fbc64)
+
+
+### CDK로 배포된 인프라 콘솔 이미지
+
+1. vpc 이미지
+<img width="1280" alt="vpc1" src="https://github.com/user-attachments/assets/e98ec279-655a-4b82-b093-31dc3eb326ea">
+
+2. eks 이미지
+<img width="1280" alt="eks1" src="https://github.com/user-attachments/assets/236be135-67fc-47a8-8bc3-e177bc7a7b9d">
+
+3. lambda 이미지
+<img width="1280" alt="lambda1" src="https://github.com/user-attachments/assets/ee095609-3914-4e4d-b56c-aa325ee7d5eb">
+<img width="1280" alt="lambda2" src="https://github.com/user-attachments/assets/5ac6e4c8-8f72-458d-9161-05001f360bdf">
+
