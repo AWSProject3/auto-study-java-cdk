@@ -17,7 +17,3 @@
 
 ### CDK 배포 플로우
 ![image](https://github.com/user-attachments/assets/61787fe0-c30e-4cfd-b4e1-7fe1501fbc64)
-
-
-### AWS 프로젝트 최종 발표 ppt 링크
-https://docs.google.com/presentation/d/1KeuGeF44ykRrceY3Uio7zhpv8EWMv0qdHwU6V2nGsws/edit?usp=sharing
